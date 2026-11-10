@@ -1,0 +1,21 @@
+# Data (large binary files, distributed via DAH Dropbox)
+data/*.bin
+
+# Generated outputs
+output/figures/*
+output/results/*
+!output/**/.gitkeep
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# PyCharm (keep shared project config, drop per-user state)
+.idea/workspace.xml
+.idea/shelf/
+.idea/usage.statistics.xml
+
+# macOS
+.DS_Store
