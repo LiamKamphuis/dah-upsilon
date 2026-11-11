@@ -32,8 +32,9 @@ class FitResult:
 
     @property
     def errors(self) -> dict[str, float]:
-        """Symmetric (HESSE) errors."""
-        return dict(zip(self.minuit.parameters, self.minuit.errors))
+        """Symmetric (HESSE) errors; 0 for fixed parameters (Minuit keeps only a step size there)."""
+        return {n: 0.0 if fixed else e
+                for n, e, fixed in zip(self.minuit.parameters, self.minuit.errors, self.minuit.fixed)}
 
     @property
     def valid(self) -> bool:
@@ -46,7 +47,7 @@ class FitResult:
     def summary(self) -> str:
         lines = [f"{'parameter':<12}{'value':>14}{'error':>14}", "-" * 40]
         for n, v, e, fixed in zip(self.minuit.parameters, self.minuit.values, self.minuit.errors, self.minuit.fixed):
-            lines.append(f"{n:<12}{v:>14.6g}{e:>14.3g}{'  (fixed)' if fixed else ''}")
+            lines.append(f"{n:<12}{v:>14.6g}" + (f"{'(fixed)':>14}" if fixed else f"{e:>14.3g}"))
         lines.append(f"valid={self.valid}  fval (-2 lnL + const)={self.nll:.3f}  ({'binned' if self.binned else 'unbinned'})")
         return "\n".join(lines)
 
@@ -103,6 +104,9 @@ def fit(
 
     counted = _CountedCost(cost)
     m = Minuit(counted, **starts)
+    for n, p in model.params.items():  # set explicitly: the binned cost cannot read limits from scaled_cdf
+        lo_lim, hi_lim = p.limits
+        m.limits[n] = (-np.inf if lo_lim is None else lo_lim, np.inf if hi_lim is None else hi_lim)
     for n in fix or {}:
         m.fixed[n] = True
 

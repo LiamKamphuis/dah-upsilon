@@ -71,7 +71,7 @@ class Gaussian(Shape):
     """Gaussian truncated to the fit window."""
 
     PARAMS = (Param("mu", 9.46, (8.5, 11.0)), Param("sigma", 0.04, (5e-3, 0.2)))
-    
+
     def _norm(self, mu, sigma):
         lo, hi = self.window
         return stats.norm.cdf(hi, mu, sigma) - stats.norm.cdf(lo, mu, sigma)
@@ -85,11 +85,14 @@ class Gaussian(Shape):
 
 
 class DoubleGaussian(Shape):
-    """Narrow + wide Gaussian sharing a mean (TODO).
+    """Narrow + wide Gaussian sharing a mean.
 
     ``ratio = sigma_wide / sigma`` (>1) and ``frac`` (narrow fraction). A ratio
     rather than two free widths reduces their correlation and stops the
     components swapping roles: worth discussing as a model choice.
+
+    Each component is truncated and normalized on the window separately, so
+    ``frac`` is the narrow fraction *inside the window*, not on the real line.
     """
 
     PARAMS = (
@@ -99,19 +102,36 @@ class DoubleGaussian(Shape):
         Param("frac", 0.7, (0.0, 1.0)),
     )
 
+    def _norm(self, mu, sigma, ratio):
+        """Window areas of the (narrow, wide) Gaussians."""
+        lo, hi = self.window
+        wide_sigma = ratio * sigma
+        z_narrow = stats.norm.cdf(hi, mu, sigma) - stats.norm.cdf(lo, mu, sigma)
+        z_wide = stats.norm.cdf(hi, mu, wide_sigma) - stats.norm.cdf(lo, mu, wide_sigma)
+        return z_narrow, z_wide
+
     def pdf(self, x, mu, sigma, ratio, frac):
-        raise NotImplementedError("frac * N(mu, sigma) + (1-frac) * N(mu, ratio*sigma), each truncated")
+        z_narrow, z_wide = self._norm(mu, sigma, ratio)
+        narrow = stats.norm.pdf(x, mu, sigma) / z_narrow
+        wide = stats.norm.pdf(x, mu, ratio * sigma) / z_wide
+        return frac * narrow + (1.0 - frac) * wide
 
     def cdf(self, x, mu, sigma, ratio, frac):
-        raise NotImplementedError
+        lo = self.window[0]
+        wide_sigma = ratio * sigma
+        z_narrow, z_wide = self._norm(mu, sigma, ratio)
+        narrow = (stats.norm.cdf(x, mu, sigma) - stats.norm.cdf(lo, mu, sigma)) / z_narrow
+        wide = (stats.norm.cdf(x, mu, wide_sigma) - stats.norm.cdf(lo, mu, wide_sigma)) / z_wide
+        return frac * narrow + (1.0 - frac) * wide
 
 
 class CrystalBall(Shape):
-    """Gaussian core with a low-mass power-law tail from final-state radiation (TODO).
+    """Gaussian core with a low-mass power-law tail from final-state radiation.
 
-    Hint: ``scipy.stats.crystalball(beta=alpha, m=n, loc=mu, scale=sigma)``,
-    normalised on the window via its cdf. ``alpha`` and ``n`` are strongly
-    correlated and weakly constrained by data, hence fixing them from MC.
+    ``alpha`` is where the tail starts, in units of ``sigma`` below ``mu``, and
+    ``n`` is the power-law exponent (scipy's ``beta`` and ``m``). The shape is
+    truncated and normalized on the window via scipy's cdf. ``alpha`` and ``n``
+    are strongly correlated and weakly constrained by data, hence fixing them from MC.
     """
 
     PARAMS = (
@@ -121,11 +141,22 @@ class CrystalBall(Shape):
         Param("n", 3.0, (1.01, 50.0)),
     )
 
+    def _norm(self, mu, sigma, alpha, n):
+        lo, hi = self.window
+        return (
+            stats.crystalball.cdf(hi, alpha, n, loc=mu, scale=sigma)
+            - stats.crystalball.cdf(lo, alpha, n, loc=mu, scale=sigma)
+        )
+
     def pdf(self, x, mu, sigma, alpha, n):
-        raise NotImplementedError("Crystal Ball normalised on the fit window")
+        return stats.crystalball.pdf(x, alpha, n, loc=mu, scale=sigma) / self._norm(mu, sigma, alpha, n)
 
     def cdf(self, x, mu, sigma, alpha, n):
-        raise NotImplementedError
+        lo = self.window[0]
+        return (
+            stats.crystalball.cdf(x, alpha, n, loc=mu, scale=sigma)
+            - stats.crystalball.cdf(lo, alpha, n, loc=mu, scale=sigma)
+        ) / self._norm(mu, sigma, alpha, n)
 
 
 # --- background shapes ---------------------------------------------------------

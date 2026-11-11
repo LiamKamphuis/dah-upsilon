@@ -29,3 +29,11 @@ def test_fit_recovers_truth(sample, binned):
 def test_fix(sample):
     res = ups.fit(ups.build_model(("1S",), window=WINDOW), sample, fix={"sigma_1S": 0.045})
     assert res.values["sigma_1S"] == 0.045 and res.minuit.fixed["sigma_1S"]
+
+
+@pytest.mark.parametrize("binned", [False, True])
+def test_limits_applied(sample, binned):
+    model = ups.build_model(("1S",), window=WINDOW)
+    res = ups.fit(model, sample, binned=binned, progress=False)
+    assert tuple(res.minuit.limits["sigma_1S"]) == model.params["sigma_1S"].limits
+    assert tuple(res.minuit.limits["N_1S"]) == (0.0, np.inf)

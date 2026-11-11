@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from upsilon.models import Exponential, Gaussian, build_model
+from upsilon.models import CrystalBall, DoubleGaussian, Exponential, Gaussian, build_model
 
 WINDOW = (9.0, 9.9)
 X = np.linspace(*WINDOW, 20001)
@@ -10,6 +10,10 @@ X = np.linspace(*WINDOW, 20001)
 @pytest.mark.parametrize("shape, par", [
     (Gaussian(WINDOW), (9.46, 0.04)),
     (Gaussian(WINDOW), (9.05, 0.3)),  # heavily truncated
+    (DoubleGaussian(WINDOW), (9.46, 0.04, 2.0, 0.7)),
+    (DoubleGaussian(WINDOW), (9.05, 0.1, 5.0, 0.3)),  # wide component heavily truncated
+    (CrystalBall(WINDOW), (9.46, 0.04, 1.5, 3.0)),
+    (CrystalBall(WINDOW), (9.2, 0.05, 0.5, 1.5)),  # long tail cut off at lo
     (Exponential(WINDOW), (2.0,)),
     (Exponential(WINDOW), (0.0,)),
     (Exponential(WINDOW), (-1.0,)),
