@@ -39,3 +39,10 @@ def test_share_merges_parameters():
     assert "sigma_2S" not in model.names and "sigma_1S" in model.names
     with pytest.raises(ValueError):
         build_model(share={"nonexistent_1S": "sigma_1S"})
+
+
+def test_signal_only_model():
+    """background=None: for simulation, which has no combinatorial background."""
+    model = build_model(("1S",), window=WINDOW, background=None)
+    assert list(model.components) == ["1S"]
+    assert "N_bkg" not in model.names

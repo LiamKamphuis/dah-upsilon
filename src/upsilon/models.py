@@ -259,12 +259,14 @@ class MassModel:
 def build_model(
     peaks: tuple[str, ...] = ("1S", "2S", "3S"),
     signal: str = "gauss",
-    background: str = "exp",
+    background: str | None = "exp",
     window: Window = (9.0, 11.0),  # data files start at 9.0 GeV (brief says 8.5)
     share: dict[str, str] | None = None,
     mass_range: float = 0.1,
 ) -> MassModel:
     """Signal peak(s) + background. Means start at PDG values, limited to ``+- mass_range``.
+
+    ``background=None`` gives a signal-only model, for simulation (pure signal).
 
     Examples::
 
@@ -275,5 +277,6 @@ def build_model(
     for peak in peaks:
         m = PDG_MASS[peak]
         components[peak] = SIGNALS[signal](window, mu=m, limits={"mu": (m - mass_range, m + mass_range)})
-    components["bkg"] = BACKGROUNDS[background](window)
+    if background is not None:
+        components["bkg"] = BACKGROUNDS[background](window)
     return MassModel(window, components, share)

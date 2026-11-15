@@ -10,12 +10,12 @@ Typical use::
     print(result.summary())
     ups.plotting.plot_fit(result, save="fit_1S.png")
 """
-from . import models, plotting
+from . import compare, models, plotting
 from .fitting import FitResult, fit
 from .io import COLUMNS, load, load_events, select
 from .models import MassModel, build_model
 
 __all__ = [
-    "COLUMNS", "FitResult", "MassModel", "build_model", "fit", "load", "load_events",
+    "COLUMNS", "FitResult", "MassModel", "build_model", "compare", "fit", "load", "load_events",
     "models", "plotting", "select",
 ]

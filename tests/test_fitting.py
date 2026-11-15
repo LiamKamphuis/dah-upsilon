@@ -37,3 +37,12 @@ def test_limits_applied(sample, binned):
     res = ups.fit(model, sample, binned=binned, progress=False)
     assert tuple(res.minuit.limits["sigma_1S"]) == model.params["sigma_1S"].limits
     assert tuple(res.minuit.limits["N_1S"]) == (0.0, np.inf)
+
+
+def test_signal_only_fit_recovers_truth():
+    rng = np.random.default_rng(3)
+    x = rng.normal(TRUE["mu_1S"], TRUE["sigma_1S"], TRUE["N_1S"])
+    res = ups.fit(ups.build_model(("1S",), window=WINDOW, background=None), x, progress=False)
+    assert res.valid
+    for name in ("N_1S", "mu_1S", "sigma_1S"):
+        assert abs(res.values[name] - TRUE[name]) < 4 * res.errors[name], name
