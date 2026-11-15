@@ -46,3 +46,12 @@ def test_signal_only_model():
     model = build_model(("1S",), window=WINDOW, background=None)
     assert list(model.components) == ["1S"]
     assert "N_bkg" not in model.names
+
+
+def test_share_tails():
+    from upsilon.models import share_tails
+    assert share_tails("gauss") == {}
+    assert share_tails("crystal_ball") == {"alpha_2S": "alpha_1S", "alpha_3S": "alpha_1S",
+                                           "n_2S": "n_1S", "n_3S": "n_1S"}
+    model = build_model(signal="crystal_ball", share=share_tails("crystal_ball"))
+    assert "alpha_2S" not in model.names and "alpha_1S" in model.names

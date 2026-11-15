@@ -46,3 +46,19 @@ def test_signal_only_fit_recovers_truth():
     assert res.valid
     for name in ("N_1S", "mu_1S", "sigma_1S"):
         assert abs(res.values[name] - TRUE[name]) < 4 * res.errors[name], name
+
+
+def test_warns_on_unconstrained_parameter():
+    """Regression: full-data CB fit with free 2S tails gave yield errors of 2 while
+    reporting valid. Same mechanism here: Gaussian data leave the CB tail unconstrained."""
+    x = np.random.default_rng(4).normal(TRUE["mu_1S"], TRUE["sigma_1S"], 20000)
+    model = ups.build_model(("1S",), signal="crystal_ball", window=WINDOW, background=None)
+    with pytest.warns(UserWarning, match="n_1S"):
+        ups.fit(model, x, progress=False)
+
+
+def test_no_warning_on_good_fit(sample):
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        ups.fit(ups.build_model(("1S",), window=WINDOW), sample, progress=False)

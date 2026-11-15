@@ -1,6 +1,6 @@
 """Mass differences and momentum-scale-corrected masses, with signal-shape bias from simulation.
 
-For each signal shape: fit data (tails free per peak), measure the shape bias on
+For each signal shape: fit data (one set of tail parameters shared by all peaks), measure the shape bias on
 simulation, subtract it, then compare mass differences and scale-corrected masses with PDG.
 Needs the TODO functions in src/upsilon/masses.py.
 """
@@ -10,7 +10,7 @@ import numpy as np
 
 import upsilon as ups
 from upsilon import masses
-from upsilon.models import PDG_MASS
+from upsilon.models import PDG_MASS, share_tails
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--dataset", default="small")
@@ -24,7 +24,7 @@ pdg = np.array([PDG_MASS[p] for p in masses.PEAKS])
 MEV = 1e3
 
 for signal in args.signals:
-    result = ups.fit(ups.build_model(signal=signal), data, binned=args.binned)
+    result = ups.fit(ups.build_model(signal=signal, share=share_tails(signal)), data, binned=args.binned)
     bias = masses.shape_bias(signal, mc)
     raw, raw_cov = masses.mass_vector(result)
     mu, cov = masses.apply_bias(raw, raw_cov, bias, masses.widths(result))

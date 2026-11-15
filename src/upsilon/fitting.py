@@ -7,6 +7,7 @@ itself a potential source of bias.
 from __future__ import annotations
 
 import json
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -127,7 +128,23 @@ def fit(
             m.minos()
         counted.bar.set_description_str("fit done")
     counted.bar = None  # later use of result.minuit (profiles, contours) runs without a bar
+    _warn_unconstrained(m)
     return FitResult(model, m, x, binned, edges)
+
+
+def _warn_unconstrained(m: Minuit) -> None:
+    """Warn about free parameters whose error exceeds half their allowed range.
+
+    Such a parameter barely changes the likelihood (e.g. a Crystal Ball ``n`` once
+    ``alpha`` has run off the window), which makes the HESSE matrix near-singular:
+    Minuit can still report a valid fit while every error, even the yields', is garbage.
+    """
+    bad = [p.name for p in m.params
+           if not p.is_fixed and p.lower_limit is not None and p.upper_limit is not None
+           and p.error > 0.5 * (p.upper_limit - p.lower_limit)]
+    if bad:
+        warnings.warn(f"parameter(s) {bad} unconstrained by the data (error > half their range): "
+                      "the covariance and all errors are unreliable; fix or share them", stacklevel=3)
 
 
 class _CountedCost:

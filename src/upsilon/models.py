@@ -186,6 +186,7 @@ class Exponential(Shape):
 
 
 SIGNALS: dict[str, type[Shape]] = {"gauss": Gaussian, "double_gauss": DoubleGaussian, "crystal_ball": CrystalBall}
+TAIL_PARAMS: dict[str, tuple[str, ...]] = {"gauss": (), "double_gauss": ("ratio", "frac"), "crystal_ball": ("alpha", "n")}
 BACKGROUNDS: dict[str, type[Shape]] = {"exp": Exponential}
 
 
@@ -254,6 +255,15 @@ class MassModel:
     def __repr__(self) -> str:
         comps = ", ".join(f"{k}={s!r}" for k, s in self.components.items())
         return f"MassModel(window={self.window}, {comps})"
+
+
+def share_tails(signal: str, peaks: tuple[str, ...] = ("1S", "2S", "3S")) -> dict[str, str]:
+    """``share`` mapping that gives every peak the first peak's tail parameters.
+
+    Floating tails per peak is not identifiable on the full dataset: the 2S tail
+    runs off (alpha -> large, n unconstrained) and HESSE breaks. One shared set is stable.
+    """
+    return {f"{p}_{k}": f"{p}_{peaks[0]}" for p in TAIL_PARAMS[signal] for k in peaks[1:]}
 
 
 def build_model(
