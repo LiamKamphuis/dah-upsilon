@@ -9,23 +9,32 @@ import argparse
 import numpy as np
 
 import upsilon as ups
+from upsilon.models import BASELINE_SIGNAL, share_tails
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--dataset", default="small")
+parser.add_argument("--unbinned", action="store_true",
+                    help="add the unbinned-fit variation (slow: ~10-20 min on small with the double CB baseline)")
 args = parser.parse_args()
 
 mass = ups.load(args.dataset)["mass"]
 PARAMS = ("mu_1S", "mu_2S", "mu_3S")
 
-baseline = ups.fit(ups.build_model(), mass, binned=True)
+
+def model(signal=BASELINE_SIGNAL, **kw):
+    return ups.build_model(signal=signal, share=share_tails(signal), **kw)
+
+
+baseline = ups.fit(model(), mass, binned=True)
 variations = {
-    "fit window 9.1-10.9": lambda: ups.fit(ups.build_model(window=(9.1, 10.9)), mass, binned=True),
-    "bin width x2": lambda: ups.fit(ups.build_model(), mass, binned=True, bins=125),
-    "unbinned": lambda: ups.fit(ups.build_model(), mass),
-    # TODO "Crystal Ball signal": lambda: ups.fit(ups.build_model(signal="crystal_ball"), mass, binned=True),
-    # TODO "momentum scale": lambda: ups.fit(ups.build_model(), mass * (1 + delta), binned=True),
+    "fit window 9.1-10.9": lambda: ups.fit(model(window=(9.1, 10.9)), mass, binned=True),
+    "bin width x2": lambda: ups.fit(model(), mass, binned=True, bins=125),
+    "Crystal Ball signal": lambda: ups.fit(model("crystal_ball"), mass, binned=True),
+    # TODO "momentum scale": lambda: ups.fit(model(), mass * (1 + delta), binned=True),
     # TODO alternative background shape (add to models.BACKGROUNDS)
 }
+if args.unbinned:
+    variations["unbinned"] = lambda: ups.fit(model(), mass)
 
 shifts = {}
 for name, run in variations.items():

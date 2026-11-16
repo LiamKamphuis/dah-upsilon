@@ -303,6 +303,9 @@ class Exponential(Shape):
 SIGNALS: dict[str, type[Shape]] = {
     "gauss": Gaussian, "double_gauss": DoubleGaussian, "crystal_ball": CrystalBall, "double_cb": DoubleCrystalBall,
 }
+#: Signal shape for the final measurement (tails shared across peaks, see ``share_tails``).
+#: Best fit on the full data: chi2/ndof = 342/235 vs 694/237 for a single Crystal Ball.
+BASELINE_SIGNAL = "double_cb"
 TAIL_PARAMS: dict[str, tuple[str, ...]] = {
     "gauss": (), "double_gauss": ("ratio", "frac"), "crystal_ball": ("alpha", "n"),
     "double_cb": ("alpha", "n", "ratio", "frac"),

@@ -10,12 +10,12 @@ import numpy as np
 
 import upsilon as ups
 from upsilon import masses
-from upsilon.models import PDG_MASS, share_tails
+from upsilon.models import BASELINE_SIGNAL, PDG_MASS, share_tails
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--dataset", default="small")
 parser.add_argument("--binned", action="store_true")
-parser.add_argument("--signals", nargs="+", default=["crystal_ball", "double_gauss", "gauss"])
+parser.add_argument("--signals", nargs="+", default=[BASELINE_SIGNAL, "crystal_ball", "double_gauss", "gauss"])
 args = parser.parse_args()
 
 data = ups.load(args.dataset)["mass"]
