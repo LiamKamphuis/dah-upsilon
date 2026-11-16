@@ -38,11 +38,11 @@ ups.fit(model, mass, fix={"alpha_1S": 1.7, "n_1S": 2.5})   # tails fixed from MC
 | Path | Contents |
 |---|---|
 | `src/upsilon/io.py` | binary reader, `select()` cuts, column labels, project paths |
-| `src/upsilon/models.py` | `Shape`s normalised on the fit window (`Gaussian`, `Exponential`; `DoubleGaussian`, `CrystalBall` **TODO**), `MassModel` (Σ N_k·shape_k, parameter sharing), `build_model()` |
+| `src/upsilon/models.py` | `Shape`s normalised on the fit window (`Gaussian`, `DoubleGaussian`, `CrystalBall`, `DoubleCrystalBall`, `Exponential`; `JohnsonSU`, `Hypatia` **TODO**), `MassModel` (Σ N_k·shape_k, parameter sharing), `build_model()`, `BASELINE_SIGNAL` (double Crystal Ball, tails shared via `share_tails`) |
 | `src/upsilon/fitting.py` | `fit()` → `FitResult` (values, errors, summary, JSON) via iminuit |
 | `src/upsilon/plotting.py` | observable histograms, fit overlay, residuals/pulls, 2D vs mass |
 | `scripts/measure_masses.py` | the core measurement: observables, 1S fit, three-peak fit, residuals/pulls |
-| `scripts/signal_shape.py` | Crystal Ball / double Gaussian, tails fixed from simulation (needs the TODO shapes) |
+| `scripts/signal_shape.py` | all signal shapes in one comparison table (MC vs floating tails), MC-tail likelihood-ratio test, profile of μ(1S) |
 | `scripts/kinematics.py` | observables vs mass; TODO purity and (pt, η) bins |
 | `scripts/systematics.py` | refit with one choice changed; table of mass shifts |
 | `output/figures`, `output/results` | generated plots and fit JSON (gitignored) |
