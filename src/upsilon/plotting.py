@@ -88,6 +88,25 @@ def plot_residuals(result: FitResult, bins: int = 250, kind: str = "residual", a
     return _save(fig, save)
 
 
+def plot_profiles(results: dict[str, FitResult], name: str, ref: float = 0.0, scale: float = 1e3,
+                  unit: str = "MeV/$c^2$", size: int = 31, save: str | None = None):
+    """Overlay profile likelihoods of parameter ``name`` from several fits.
+
+    The x axis is ``(value - ref) * scale``, e.g. ``ref=PDG_MASS["1S"]`` for the mass offset in MeV.
+    """
+    from .compare import profile_scan
+
+    fig, ax = plt.subplots(figsize=(7, 4.5))
+    for label, r in results.items():
+        x, d = profile_scan(r, name, size=size)
+        ax.plot((x - ref) * scale, d, label=label)
+    ax.axhline(1.0, color="0.5", ls=":", lw=1)
+    ax.set(xlabel=f"{name} $-$ {ref:g} [{unit}]" if ref else f"{name} [{unit}]",
+           ylabel=r"$\Delta(-2\ln L)$", ylim=(0, 9), title=f"Profile likelihood of {name}")
+    ax.legend()
+    return _save(fig, save)
+
+
 def plot_vs_mass(events: np.ndarray, column: str, bins=(250, 100), range_=None, save: str | None = None):
     """2D histogram of ``column`` against dimuon mass (task 6)."""
     fig, ax = plt.subplots(figsize=(8, 6))

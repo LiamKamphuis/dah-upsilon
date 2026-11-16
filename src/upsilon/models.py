@@ -70,7 +70,10 @@ class Shape(ABC):
 class Gaussian(Shape):
     """Gaussian truncated to the fit window."""
 
-    PARAMS = (Param("mu", 9.46, (8.5, 11.0)), Param("sigma", 0.04, (5e-3, 0.2)))
+    PARAMS = (
+        Param("mu", 9.46, (8.5, 11.0)),
+        Param("sigma", 0.04, (5e-3, 0.2))
+    )
 
     def _norm(self, mu, sigma):
         lo, hi = self.window
@@ -102,27 +105,15 @@ class DoubleGaussian(Shape):
         Param("frac", 0.7, (0.0, 1.0)),
     )
 
-    def _norm(self, mu, sigma, ratio):
-        """Window areas of the (narrow, wide) Gaussians."""
-        lo, hi = self.window
-        wide_sigma = ratio * sigma
-        z_narrow = stats.norm.cdf(hi, mu, sigma) - stats.norm.cdf(lo, mu, sigma)
-        z_wide = stats.norm.cdf(hi, mu, wide_sigma) - stats.norm.cdf(lo, mu, wide_sigma)
-        return z_narrow, z_wide
+    def __init__(self, window: Window, limits: dict[str, Limits] | None = None, **starts: float):
+        super().__init__(window, limits, **starts)
+        self._gauss = Gaussian(window)
 
     def pdf(self, x, mu, sigma, ratio, frac):
-        z_narrow, z_wide = self._norm(mu, sigma, ratio)
-        narrow = stats.norm.pdf(x, mu, sigma) / z_narrow
-        wide = stats.norm.pdf(x, mu, ratio * sigma) / z_wide
-        return frac * narrow + (1.0 - frac) * wide
+        return frac * self._gauss.pdf(x, mu, sigma) + (1.0 - frac) * self._gauss.pdf(x, mu, ratio * sigma)
 
     def cdf(self, x, mu, sigma, ratio, frac):
-        lo = self.window[0]
-        wide_sigma = ratio * sigma
-        z_narrow, z_wide = self._norm(mu, sigma, ratio)
-        narrow = (stats.norm.cdf(x, mu, sigma) - stats.norm.cdf(lo, mu, sigma)) / z_narrow
-        wide = (stats.norm.cdf(x, mu, wide_sigma) - stats.norm.cdf(lo, mu, wide_sigma)) / z_wide
-        return frac * narrow + (1.0 - frac) * wide
+        return frac * self._gauss.cdf(x, mu, sigma) + (1.0 - frac) * self._gauss.cdf(x, mu, ratio * sigma)
 
 
 class CrystalBall(Shape):

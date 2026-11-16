@@ -87,3 +87,15 @@ def test_likelihood_ratio_rejects_mismatched_fits(fits):
 def test_table(fits):
     text = compare.table({"gauss+exp": fits["right", True], "exp only": fits["wrong", True]})
     assert "gauss+exp" in text and "exp only" in text and "dBIC" in text
+
+
+def test_profile_scan(fits):
+    """Profile of mu: minimum at the fit value, crossing Delta(-2lnL) = 1 at about +-1 HESSE error."""
+    res = fits["right", False]
+    x, d = compare.profile_scan(res, "mu_1S", size=41, bound=2)
+    assert d.min() == pytest.approx(0.0, abs=0.01)
+    assert x[np.argmin(d)] == pytest.approx(res.values["mu_1S"], abs=0.1 * res.errors["mu_1S"])
+    i = np.argmin(d)
+    lo = np.interp(1.0, d[:i + 1][::-1], x[:i + 1][::-1])
+    hi = np.interp(1.0, d[i:], x[i:])
+    assert (hi - lo) / 2 == pytest.approx(res.errors["mu_1S"], rel=0.05)

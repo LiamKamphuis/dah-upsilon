@@ -135,9 +135,24 @@ def table(results: dict[str, FitResult], bins: int = 250) -> str:
     rows = {name: (information_criteria(r), gof(r, bins), runs_test(r, bins)) for name, r in results.items()}
     aic0 = min(ic.aic for ic, _, _ in rows.values())
     bic0 = min(ic.bic for ic, _, _ in rows.values())
-    head = f"{'model':<28}{'k':>4}{'chi2/ndof':>16}{'p(chi2)':>11}{'p(runs)':>11}{'dAIC':>10}{'dBIC':>10}"
+    head = (f"{'model':<28}{'k':>4}{'chi2/ndof':>16}{'':9}{'p(chi2)':>11}{'p(runs)':>11}"
+            f"{'dAIC':>10}{'dBIC':>10}")
     lines = [head, "-" * len(head)]
     for name, (ic, g, ru) in rows.items():
-        lines.append(f"{name:<28}{ic.k:>4}{f'{g.stat:.1f}/{g.ndof}':>16}{g.pvalue:>11.3g}{ru.pvalue:>11.3g}"
+        lines.append(f"{name:<28}{ic.k:>4}{f'{g.stat:.1f}/{g.ndof}':>16}{f' = {g.stat / g.ndof:.2f}':<9}"
+                     f"{g.pvalue:>11.3g}{ru.pvalue:>11.3g}"
                      f"{ic.aic - aic0:>10.1f}{ic.bic - bic0:>10.1f}")
     return "\n".join(lines)
+
+
+def profile_scan(result: FitResult, name: str, size: int = 31, bound: float = 3.0) -> tuple[np.ndarray, np.ndarray]:
+    """Profile likelihood of parameter ``name``: Delta(-2 ln L) on a grid of ``size`` points
+    within +-``bound`` HESSE errors, re-minimising all other parameters at each point.
+
+    Delta = 1 crosses at the 68% interval (what MINOS reports). Overlaying the
+    profiles of several models shows whether a model choice moves the parameter
+    by more than its statistical error: the question that matters for a measurement,
+    even when every model fails goodness of fit.
+    """
+    x, y, _ = result.minuit.mnprofile(name, size=size, bound=bound, subtract_min=False)
+    return x, y - result.nll
