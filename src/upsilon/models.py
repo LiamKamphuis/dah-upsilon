@@ -159,6 +159,130 @@ class CrystalBall(Shape):
         ) / self._norm(mu, sigma, alpha, n)
 
 
+class DoubleCrystalBall(Shape):
+    """Two Crystal Balls sharing ``mu``, ``alpha`` and ``n``, with widths ``sigma`` and
+    ``ratio * sigma`` and narrow fraction ``frac``.
+
+    Why: the mass resolution varies with the kinematics (sigma_1S ~ 38-52 MeV across
+    eta and pT), so the peak is a blend of Gaussians: sharper core and heavier wings than
+    one Gaussian. A single CB core leaves a symmetric W-shaped pull pattern and drags its
+    tail inwards to absorb the low-side wing. The LHCb paper uses this shape for its
+    mass-model systematic.
+
+    ``alpha`` is in units of each component's own sigma, so the two tails start at
+    different masses (a modelling choice; an absolute tail start is the alternative).
+    """
+
+    PARAMS = (
+        Param("mu", 9.46, (8.5, 11.0)),
+        Param("sigma", 0.035, (5e-3, 0.2)),
+        Param("alpha", 1.5, (0.1, 10.0)),
+        Param("n", 3.0, (1.01, 50.0)),
+        Param("ratio", 1.6, (1.0, 5.0)),
+        Param("frac", 0.5, (0.0, 1.0)),
+    )
+
+    def __init__(self, window: Window, limits: dict[str, Limits] | None = None, **starts: float):
+        super().__init__(window, limits, **starts)
+        self._cb = CrystalBall(window)
+
+    def pdf(self, x, mu, sigma, alpha, n, ratio, frac):
+        return frac * self._cb.pdf(x, mu, sigma, alpha, n) + (1.0 - frac) * self._cb.pdf(x, mu, ratio * sigma, alpha, n)
+
+    def cdf(self, x, mu, sigma, alpha, n, ratio, frac):
+        return frac * self._cb.cdf(x, mu, sigma, alpha, n) + (1.0 - frac) * self._cb.cdf(x, mu, ratio * sigma, alpha, n)
+
+
+# --- scaffolds (TODO: implement, then add to SIGNALS / TAIL_PARAMS) --------------
+
+class JohnsonSU(Shape):
+    """TODO. Johnson's S_U distribution: a sinh-transformed Gaussian with tunable skew
+    (``gamma``) and tail weight (``delta``; large delta -> Gaussian). Smooth everywhere,
+    no junction like the CB's, and both tails heavier than Gaussian.
+
+    scipy: ``stats.johnsonsu.pdf(x, gamma, delta, loc=mu, scale=sigma)``; normalise on
+    the window with its cdf, as ``CrystalBall`` does.
+
+    Watch out: ``mu`` here is a location parameter, NOT the peak position. With skew,
+    the mode sits away from ``mu``, so report the mode (find it numerically) as the mass,
+    or account for the difference: this is the shape-bias question again.
+    """
+
+    PARAMS = (
+        Param("mu", 9.46, (8.5, 11.0)),
+        Param("sigma", 0.04, (5e-3, 0.2)),
+        Param("gamma", 0.0, (-5.0, 5.0)),
+        Param("delta", 2.0, (0.1, 20.0)),
+    )
+
+    def pdf(self, x, mu, sigma, gamma, delta):
+        raise NotImplementedError
+
+    def cdf(self, x, mu, sigma, gamma, delta):
+        raise NotImplementedError
+
+
+class Hypatia(Shape):
+    """TODO. The LHCb "Hypatia" shape (D. Martinez Santos, F. Dupertuis,
+    NIM A 764 (2014) 150, arXiv:1312.5000): a generalised-hyperbolic core with
+    power-law tails on both sides (``a1, n1`` low side, ``a2, n2`` high side).
+
+    Why it exists: it is what you get by *marginalising a Gaussian over a distribution
+    of per-event resolutions*, which is the mixture effect behind the double-CB result.
+    It is the physically motivated version of "two widths".
+
+    Practicalities: the core needs modified Bessel functions (``scipy.special.kv``) and
+    there is no closed-form cdf: integrate the pdf numerically on a fine grid over the
+    window and interpolate (cache the grid per parameter set: the fit calls this a lot).
+    Parameters are highly degenerate; expect to fix ``lambda_``/``zeta``/``beta`` and
+    tails from simulation. Read section 2 of the paper before choosing parameters:
+    the list below is a starting point, not settled.
+    """
+
+    PARAMS = (
+        Param("mu", 9.46, (8.5, 11.0)),
+        Param("sigma", 0.04, (5e-3, 0.2)),
+        Param("lambda_", -2.0, (-10.0, -0.01)),
+        Param("zeta", 1e-3, (0.0, 10.0)),
+        Param("beta", 0.0, (-1.0, 1.0)),
+        Param("a1", 2.0, (0.1, 10.0)),
+        Param("n1", 2.0, (1.01, 50.0)),
+        Param("a2", 3.0, (0.1, 10.0)),
+        Param("n2", 5.0, (1.01, 50.0)),
+    )
+
+    def pdf(self, x, *p):
+        raise NotImplementedError
+
+    def cdf(self, x, *p):
+        raise NotImplementedError
+
+
+class KinematicResolutionModel:
+    """TODO (design notes only). Use each event's kinematics in the mass fit.
+
+    Two routes; the paper (section 5) uses a mix of both:
+
+    1. **Fit in kinematic bins** (simpler; brief item 7, ``scripts/kinematics.py``).
+       One ``MassModel`` per (pT, eta) cell, each with its own sigma, yields and
+       background; masses common. Build per-cell models with parameters renamed by cell
+       (e.g. ``sigma_1S_c3``) and *add* the iminuit costs: parameters with equal names
+       are shared. The paper fixes the masses from the global fit and parameterises
+       sigma_1S as linear in pT and y.
+
+    2. **Per-event resolution** (more powerful, more pitfalls): an unbinned fit to
+       p(m | pT, eta) with sigma_i = sigma_0 * (1 + a (pT_i - pT_0) + b (eta_i - eta_0)).
+       iminuit's unbinned costs accept multi-row data, x = (mass, pt, eta). Pitfall
+       (Punzi, physics/0401045): if signal and background have *different* pT/eta
+       distributions, a conditional likelihood biases the yields unless those
+       distributions are modelled too. Check this before trusting yields.
+
+    Notes: the ``eta`` column is pseudorapidity (= arcsinh(p_z / pT), checked to 1e-7),
+    not the rapidity y the paper bins in. y = 0.5 ln((E + p_z) / (E - p_z)) with
+    E = sqrt(p^2 + m^2), p_z = sqrt(p^2 - pT^2).
+    """
+
+
 # --- background shapes ---------------------------------------------------------
 
 class Exponential(Shape):
@@ -185,8 +309,13 @@ class Exponential(Shape):
         return np.expm1(-c * self._x(x)) / np.expm1(-c * width)
 
 
-SIGNALS: dict[str, type[Shape]] = {"gauss": Gaussian, "double_gauss": DoubleGaussian, "crystal_ball": CrystalBall}
-TAIL_PARAMS: dict[str, tuple[str, ...]] = {"gauss": (), "double_gauss": ("ratio", "frac"), "crystal_ball": ("alpha", "n")}
+SIGNALS: dict[str, type[Shape]] = {
+    "gauss": Gaussian, "double_gauss": DoubleGaussian, "crystal_ball": CrystalBall, "double_cb": DoubleCrystalBall,
+}
+TAIL_PARAMS: dict[str, tuple[str, ...]] = {
+    "gauss": (), "double_gauss": ("ratio", "frac"), "crystal_ball": ("alpha", "n"),
+    "double_cb": ("alpha", "n", "ratio", "frac"),
+}
 BACKGROUNDS: dict[str, type[Shape]] = {"exp": Exponential}
 
 

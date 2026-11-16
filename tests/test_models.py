@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from upsilon.models import CrystalBall, DoubleGaussian, Exponential, Gaussian, build_model
+from upsilon.models import (CrystalBall, DoubleCrystalBall, DoubleGaussian, Exponential, Gaussian, Hypatia,
+                            JohnsonSU, build_model)
+
+todo = pytest.mark.xfail(raises=NotImplementedError, reason="TODO: scaffolded shape")
 
 WINDOW = (9.0, 9.9)
 X = np.linspace(*WINDOW, 20001)
@@ -14,6 +17,10 @@ X = np.linspace(*WINDOW, 20001)
     (DoubleGaussian(WINDOW), (9.05, 0.1, 5.0, 0.3)),  # wide component heavily truncated
     (CrystalBall(WINDOW), (9.46, 0.04, 1.5, 3.0)),
     (CrystalBall(WINDOW), (9.2, 0.05, 0.5, 1.5)),  # long tail cut off at lo
+    (DoubleCrystalBall(WINDOW), (9.46, 0.033, 1.5, 3.3, 1.6, 0.43)),
+    (DoubleCrystalBall(WINDOW), (9.2, 0.05, 0.5, 1.5, 3.0, 0.8)),  # wide tail cut off at lo
+    pytest.param(JohnsonSU(WINDOW), (9.46, 0.04, -0.5, 2.0), marks=todo),
+    pytest.param(Hypatia(WINDOW), (9.46, 0.04, -2.0, 1e-3, 0.0, 2.0, 2.0, 3.0, 5.0), marks=todo),
     (Exponential(WINDOW), (2.0,)),
     (Exponential(WINDOW), (0.0,)),
     (Exponential(WINDOW), (-1.0,)),
@@ -55,3 +62,17 @@ def test_share_tails():
                                            "n_2S": "n_1S", "n_3S": "n_1S"}
     model = build_model(signal="crystal_ball", share=share_tails("crystal_ball"))
     assert "alpha_2S" not in model.names and "alpha_1S" in model.names
+
+
+def test_double_cb_reduces_to_cb():
+    x = np.linspace(*WINDOW, 101)
+    for frac, ratio in ((1.0, 2.0), (0.3, 1.0)):
+        assert DoubleCrystalBall(WINDOW).pdf(x, 9.46, 0.04, 1.5, 3.0, ratio, frac) == pytest.approx(
+            CrystalBall(WINDOW).pdf(x, 9.46, 0.04, 1.5, 3.0))
+
+
+def test_double_cb_shared_tails():
+    from upsilon.models import share_tails
+    model = build_model(signal="double_cb", share=share_tails("double_cb"))
+    assert {"ratio_2S", "frac_3S", "alpha_2S"}.isdisjoint(model.names)
+    assert len(model.names) == 3 * 3 + 4 + 2  # (N, mu, sigma) per peak + shared shape + background
