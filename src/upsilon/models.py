@@ -16,13 +16,15 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, replace
 
 import numpy as np
+from particle import Particle
 from scipy import stats
 
 Window = tuple[float, float]
 Limits = tuple[float | None, float | None]
 
-#: PDG masses in GeV/c^2, used as starting values.
-PDG_MASS = {"1S": 9.4603, "2S": 10.02326, "3S": 10.3552}
+#: PDG Monte Carlo IDs of the Upsilon(nS) states, used as starting vals.
+PDG_ID = {"1S": 553, "2S": 100553, "3S": 200553}
+PDG_MASS = {peak: Particle.from_pdgid(pid).mass / 1e3 for peak, pid in PDG_ID.items()}
 
 
 @dataclass(frozen=True)

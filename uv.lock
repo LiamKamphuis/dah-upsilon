@@ -7,6 +7,15 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "attrs"
+version = "26.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9a/8e/82a0fe20a541c03148528be8cac2408564a6c9a0cc7e9171802bc1d26985/attrs-26.1.0.tar.gz", hash = "sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32", size = 952055, upload-time = "2026-03-19T14:22:25.026Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl", hash = "sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309", size = 67548, upload-time = "2026-03-19T14:22:23.645Z" },
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 source = { registry = "https://pypi.org/simple" }
@@ -262,6 +271,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/5e/38/7311ade45b67dc2c2a4f9d1af4c18285f92591235e8c6cab4f9cecd36516/fonttools-4.68.0-cp315-cp315t-win_amd64.whl", hash = "sha256:6aea5cdbc32f5fd202cf8dec053a784b08692f8b1992af80eba32bef82bf84c7", size = 2563334, upload-time = "2026-10-27T16:30:19.883Z" },
     { url = "https://files.pythonhosted.org/packages/8a/ee/fd08713d15bf0f6487a72e415e91ef4a6b52ca96fa8f879533107a41e18d/fonttools-4.68.0-cp315-cp315t-win_arm64.whl", hash = "sha256:b612613f0165f560571c4e372af0ebbb1c4b36067de409922dcea349beb8bb20", size = 2528487, upload-time = "2026-10-27T16:30:22.222Z" },
     { url = "https://files.pythonhosted.org/packages/35/74/4ea331ecc65ba05a58b1e4e8ccd604c8a15565f876dfbf93fc2a2ea2e22b/fonttools-4.68.0-py3-none-any.whl", hash = "sha256:d76f8fdcb6936f5e1045a0c9dd721a4bf11112e60d1e243bfa1d39f06a8b3104", size = 1248357, upload-time = "2026-10-27T16:30:24.389Z" },
+]
+
+[[package]]
+name = "hepunits"
+version = "2.4.7"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c7/b7/b5e4ef584c3c5bccad51894790cc53747e276a2ce70b17fcda9683e272ed/hepunits-2.4.7.tar.gz", hash = "sha256:dfbe9e9cdf265aeea1896352ca5eb50609e15d497a03c0466ba4a920763f6337", size = 17978, upload-time = "2026-10-01T11:57:33.568Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/61/2dce624e88196b648ca989f3297835659ad5727ded0983b1c94f0eebb116/hepunits-2.4.7-py3-none-any.whl", hash = "sha256:6b67e387dbffb579cf8b01892681c6a91440de71e18c7b7578f241324f591895", size = 17091, upload-time = "2026-10-01T11:57:32.21Z" },
 ]
 
 [[package]]
@@ -729,6 +747,19 @@ wheels = [
 ]
 
 [[package]]
+name = "particle"
+version = "1.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "hepunits" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9f/24/1f1a9ce2a72767cf63a8afd0d0d4d1e182da49bd3cea582495c980c6fb80/particle-1.1.1.tar.gz", hash = "sha256:d7145621969dbb1190b32798357c2695a3b4b5a28380b290ad9efd59530da92b", size = 283354, upload-time = "2026-11-17T10:04:05.424Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/ff/3de7cd02584dc922502681da3d71046e48ac6d236beb2033ddcb2dd42c25/particle-1.1.1-py3-none-any.whl", hash = "sha256:b0e94f80328b8ff179ea1b847527f8cb896efb8261d07b92c9b5604c80373329", size = 232923, upload-time = "2026-11-17T10:04:03.454Z" },
+]
+
+[[package]]
 name = "pillow"
 version = "13.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1051,6 +1082,7 @@ dependencies = [
     { name = "matplotlib" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "particle" },
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "tqdm" },
@@ -1066,6 +1098,7 @@ requires-dist = [
     { name = "iminuit", specifier = ">=2.25" },
     { name = "matplotlib", specifier = ">=3.8" },
     { name = "numpy", specifier = ">=1.26" },
+    { name = "particle", specifier = ">=1.1.1" },
     { name = "scipy", specifier = ">=1.11" },
     { name = "tqdm", specifier = ">=4.70.1" },
 ]
