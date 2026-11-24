@@ -1,0 +1,396 @@
+% Comment conventions:
+%   %% SCOPE:   what the section must cover (and must not)
+%   %% FIGS:    planned figures/tables, with the script that makes them
+%               (figures from ../output/figures/full/ or figures/; run the scripts with --dataset full)
+%   %% NUMBERS: the script and output/results/full/*.json that every quoted number comes from
+%   %% PAGES:   rough budget towards ~8 pages of body text (title page, references, appendices excluded)
+%
+% Compile: pdflatex -> biber -> pdflatex -> pdflatex   (Overleaf: pdfLaTeX; biber runs automatically).
+% Missing figures compile as framed placeholders (see \plot below), so the draft builds before
+% every script has been run on the full dataset.
+
+\documentclass[a4paper,11pt]{article}
+% ---------------------------------------------------------------- packages
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{siunitx}                    % \SI{9456.02}{\MeV}, \num{1.86e6}
+\usepackage{booktabs}
+\usepackage{array,tabularx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+\usepackage[
+  backend=biber,
+  style=phys,
+  articletitle=true,
+  biblabel=brackets,
+  chaptertitle=false,
+  pageranges=false,
+  sorting=none,
+  maxbibnames=5, minbibnames=3,
+  doi=true, eprint=true, url=true, isbn=false
+]{biblatex}
+\addbibresource{references.bib}
+
+% Figures: straight from the scripts' output when compiled inside the repo; on Overleaf, upload
+% output/figures/full/*.png into figures/.
+\graphicspath{{figures/}{../output/figures/full/}}
+
+% ---------------------------------------------------------------- float placement
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\bottomfraction}{0.7}
+\renewcommand{\textfraction}{0.15}
+\renewcommand{\floatpagefraction}{0.8}
+\setcounter{topnumber}{2}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{4}
+
+% ---------------------------------------------------------------- units and macros
+\sisetup{separate-uncertainty = true, range-phrase = --, range-units = single, per-mode = symbol}
+\newcommand{\MeVcc}{\ensuremath{\mathrm{MeV}/c^2}}
+\newcommand{\GeVcc}{\ensuremath{\mathrm{GeV}/c^2}}
+\newcommand{\GeVc}{\ensuremath{\mathrm{GeV}/c}}
+
+\newcommand{\Ups}[1]{\ensuremath{\Upsilon(#1)}}               % \Ups{1S}
+\newcommand{\mumu}{\ensuremath{\mu^+\mu^-}}
+\newcommand{\pT}{\ensuremath{p_\mathrm{T}}}
+\newcommand{\ptmin}{\ensuremath{\min(p_{\mathrm{T},1}, p_{\mathrm{T},2})}}
+\newcommand{\NLL}{\ensuremath{-2\ln L}}
+\newcommand{\iminuit}{\texttt{iminuit}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}     % remove before submission
+
+% \plot[width]{file}: the figure if it exists, otherwise a framed placeholder naming it.
+\newcommand{\plot}[2][0.8\textwidth]{%
+  \IfFileExists{figures/#2}{\includegraphics[width=#1]{#2}}{%
+  \IfFileExists{../output/figures/full/#2}{\includegraphics[width=#1]{#2}}%
+    {\fbox{\parbox[c][0.25\textheight][c]{#1}{\centering\texttt{\detokenize{#2}}\\(run the script on full data)}}}}}
+
+% ---------------------------------------------------------------- title page
+\begin{document}
+\pagestyle{empty}
+
+\IfFileExists{PandA_crest.pdf}{\par\noindent\includegraphics[width=12cm]{PandA_crest.pdf}}
+
+\par\noindent
+\vspace*{2cm}
+\begin{center}
+        \Large\bf Data Acquisition and Handling: Project F1\\[0.5em]
+        \LARGE\bf Precision Measurement of the $\Upsilon(1S, 2S, 3S)$ Masses with LHCb Dimuon Data
+\end{center}
+\vspace*{0.5cm}
+\begin{center}
+        \bf Liam Kamphuis\\
+\end{center}
+\vspace*{5mm}
+
+\begin{abstract}
+%% SCOPE: 50–100 words. The aim (absolute Upsilon masses from extended maximum-likelihood fits),
+%%        the method in one sentence (double Crystal Ball, selection, kinematic bins, systematics),
+%%        the result (three masses with stat / fit-model / momentum-scale uncertainties) and the
+%%        conclusion (momentum scale dominates; fit-model uncertainty below 1 MeV). Written LAST.
+\todo{abstract}
+\end{abstract}
+
+\vfill
+\todo{date}
+\newpage
+
+% ---------------------------------------------------------------- body
+\pagestyle{plain}
+\setcounter{page}{1}
+\tableofcontents
+\newpage
+
+% ================================================================ 1 INTRODUCTION
+\section{Introduction}
+\label{sec:intro}
+%% SCOPE: the measurement (masses of the three Upsilon states from the 2015 LHCb dimuon sample)
+%%        and why it is a test of a fitting procedure rather than of the masses themselves
+%%        (PDG values are known to < 0.5 MeV); the aim in ONE sentence; what was done (one
+%%        paragraph: Gaussian fits -> signal shapes from simulation -> selection -> kinematic bins
+%%        -> systematics); main result in one or two sentences; roadmap.
+%% NOT:   bottomonium spectroscopy beyond one sentence; LHCb detector beyond what Sec. 2 needs.
+%% REFS:  LHCb:2013itw (the reference analysis), ParticleDataGroup:2024cfk.
+%% PAGES: 0.5
+
+\todo{introduction}
+
+% ================================================================ 2 BACKGROUND
+\section{Background}
+\label{sec:background}
+%% PAGES: 0.75 in total. Only what the method and the discussion refer back to.
+
+\subsection{The \texorpdfstring{$\Upsilon$}{Upsilon} states and the LHCb dimuon sample}
+\label{sec:bg-sample}
+%% SCOPE: Upsilon(nS) as b-bbar bound states decaying to mu+mu-; natural widths (tens of keV)
+%%        << detector resolution (tens of MeV), so the peak shape is the detector's, not a
+%%        Breit-Wigner; the six observables per candidate (mass, pT, pseudorapidity eta,
+%%        p, muon pTs); rapidity y vs the eta column; the background (combinatorial muon pairs).
+%% REFS:  LHCb:2013itw; ParticleDataGroup:2024cfk.
+
+\todo{Upsilon states, observables and backgrounds}
+
+\subsection{Mass resolution, radiative tails and the momentum scale}
+\label{sec:bg-resolution}
+%% SCOPE: the mass is reconstructed from the muon momenta, so (i) the resolution follows
+%%        delta m / m ~ delta p / p and depends on the muons' kinematics; (ii) final-state
+%%        radiation gives a low-mass tail (Crystal Ball); (iii) a momentum-scale error
+%%        p -> (1 + alpha) p shifts every mass by alpha m, the dominant systematic of LHCb mass
+%%        measurements (calibrated to 3e-4).
+%% REFS:  Skwarnicki:1986xj; LHCb:2023ood; LHCb:2011ikb (momentum-scale systematic in a mass
+%%        measurement).
+
+\todo{resolution, FSR tail, momentum scale}
+
+% ================================================================ 3 METHOD
+\section{Method}
+\label{sec:method}
+%% PAGES: 1.5–2. Enough to make the results readable; detail goes to the appendices.
+
+\subsection{Data, simulation and event selection}
+\label{sec:m-data}
+%% SCOPE: full 2015 sample (number of candidates, 9–11 GeV/c^2), simulated Upsilon(1S) sample and
+%%        the generated masses (PDG 2016); the fiducial region of the paper (2 < y < 4.5,
+%%        pT < 15 GeV/c) for the kinematic bins. The selection on the softer muon,
+%%        min(pT1, pT2) >= 3 GeV/c, is motivated in Sec. 4.3; state here that tasks 1–4 use the
+%%        inclusive sample and everything from the signal-shape study on uses the selected one.
+%% NUMBERS: 01_measure_masses.py (event counts); 03_selection.py.
+%% REFS:  ParticleDataGroup:2016lqr.
+
+\todo{data, simulation, selection}
+
+\subsection{Extended maximum-likelihood fits}
+\label{sec:m-fits}
+%% SCOPE: extended likelihood (yields as parameters); binned (250 bins of 8 MeV) vs unbinned and
+%%        why binned on data; every component normalised on the fit window so the composite PDF
+%%        stays normalised; minimisation with MIGRAD, errors from HESSE, MINOS and -2 ln L scans;
+%%        safeguards: convergence requires an accurate covariance and no parameter at a limit
+%%        (false minimum of the double CB), restarts with SIMPLEX, starting values from a
+%%        reference fit.
+%% REFS:  Barlow:1990vc; James:1975dr; dembinski2025iminuit; Cowan:1998ji.
+
+\todo{likelihood, minimisation, errors}
+
+\subsection{Mass models}
+\label{sec:m-models}
+%% SCOPE: Gaussian (brief), double Gaussian, Crystal Ball and double Crystal Ball (baseline)
+%%        signal; exponential background (quadratic as a systematic). The two constraints that
+%%        make the three-peak fit identifiable: tails shared by all peaks; widths tied,
+%%        sigma_k = sigma_1S m_k / m_1S (as in the reference analysis). Simultaneous fit in
+%%        kinematic cells: masses and tails common, widths, yields and slopes per cell.
+%% FIGS:  none; parameter definitions in a short table if space allows.
+%% REFS:  Skwarnicki:1986xj; LHCb:2013itw.
+
+\todo{signal and background shapes; shared and tied parameters}
+
+\subsection{Goodness of fit, model comparison and validation}
+\label{sec:m-gof}
+%% SCOPE: Baker-Cousins chi2 for binned fits (and why not Pearson); runs test on the residual
+%%        signs; likelihood-ratio test for nested models (Wilks, and its boundary caveat); AIC/BIC
+%%        for non-nested ones; pseudo-experiments (toys) for bias and error coverage.
+%% REFS:  Baker:1983tu; wald1940runs; wilks1938large; akaike1974new; schwarz1978estimating.
+
+\todo{goodness of fit and validation}
+
+\subsection{Systematic uncertainties}
+\label{sec:m-syst}
+%% SCOPE: shape bias measured on simulation and subtracted (each variation with its own bias);
+%%        one-at-a-time variations (window, binning, signal and background shape, selection);
+%%        why the shift of a cut variation is not judged with Barlow's formula (a cut removes
+%%        mostly background, not a random subset) and the independent-slice test used instead;
+%%        momentum scale 3e-4 as a separate, fully correlated uncertainty.
+%% REFS:  Barlow:2002yb; LHCb:2023ood.
+
+\todo{systematics}
+
+% ================================================================ 4 RESULTS AND DISCUSSION
+\section{Results and discussion}
+\label{sec:results}
+%% PAGES: ~5 with figures and tables. One subsection per study; each ends with what it means for
+%%        the next. Every quoted number carries its uncertainty and comes from the named script.
+
+\subsection{Single-Gaussian fits and errors by hand}
+\label{sec:r-gauss}
+%% SCOPE: brief tasks 1–4. 1S alone, then three peaks; parameter errors from HESSE, MINOS and
+%%        -2 ln L scans, profiled vs others fixed, against sigma/sqrt(N); residuals and pulls
+%%        showing the Gaussian fails (chi2/ndof ~ 13) with a structured pattern at each peak.
+%% FIGS:  error_scans_1S_gauss.png; pulls_3peaks_gauss.png.
+%% NUMBERS: 01_measure_masses.py --signal gauss --binned (fit_1S_gauss.json, fit_3peaks_gauss.json).
+
+\begin{figure}[!htbp]
+    \centering
+    \plot[\textwidth]{error_scans_1S_gauss.png}
+    \caption{\todo{caption: profiled vs fixed scans, HESSE band, Delta = 1}}
+    \label{fig:error-scans}
+\end{figure}
+
+\todo{text}
+
+\subsection{Signal shape: simulation versus data}
+\label{sec:r-shape}
+%% SCOPE: brief task 5. MC (pure signal, known mass) shows the core and the FSR tail and each
+%%        shape's bias; data peak wider than MC (more weight in the wide component); MC tails
+%%        rejected by data (likelihood ratio); model comparison table (Gaussian -> double CB:
+%%        chi2/ndof 12.9 -> 1.36); why the double CB is the baseline despite p(chi2) ~ 2e-4.
+%% FIGS:  fit_3peaks_double_cb.png (with pulls); table: model comparison; table: MC vs data
+%%        double-CB parameters.
+%% NUMBERS: 02_signal_shape.py --binned (signal_shape.json).
+
+\todo{text, model-comparison table, MC-vs-data table}
+
+\subsection{Parameter correlations and over-parametrisation}
+\label{sec:r-correlations}
+%% SCOPE: the three degeneracies (width vs narrow fraction; alpha vs n; tail vs background) with
+%%        their correlation coefficients, which appear in MC too and which only in data; the cost
+%%        in parameter errors (sigma_1S, N_1S) vs the masses (barely affected: no mu in any strong
+%%        correlation); how shared tails, tied widths and convergence checks handle them;
+%%        profiled vs fixed scan width as a direct illustration.
+%% FIGS:  possibly a correlation-matrix heat map of the baseline fit (not yet made).
+%% NUMBERS: 02_signal_shape.py (correlation in signal_shape.json).
+
+\todo{text}
+
+\subsection{Event selection}
+\label{sec:r-selection}
+%% SCOPE: brief task 6. 2D plots; sideband estimate shows only the softer-muon pT separates
+%%        signal from background (physics: Upsilon decays share momentum between both muons);
+%%        cut scan: purity vs statistical mass error, flat optimum, round value 3.0 GeV/c;
+%%        mass stability in independent slices (1S drifts ~3 MeV, chi2 80/6) as the
+%%        motivation for the kinematic bins.
+%% FIGS:  sideband_purity.png; cut_scan.png.
+%% NUMBERS: 03_selection.py (selection.json).
+
+\begin{figure}[!htbp]
+    \centering
+    \begin{subfigure}[b]{0.40\textwidth}
+        \centering
+        \plot[\linewidth]{sideband_purity.png}
+        \caption{Sideband estimate.}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.58\textwidth}
+        \centering
+        \plot[\linewidth]{cut_scan.png}
+        \caption{Cut scan and mass stability.}
+    \end{subfigure}
+    \caption{\todo{caption}}
+    \label{fig:selection}
+\end{figure}
+
+\todo{text}
+
+\subsection{Fits in bins of transverse momentum and rapidity}
+\label{sec:r-kinematic}
+%% SCOPE: brief task 7. Grid (3 y x 4 pT) and what is shared; sigma_1S map (32–65 MeV, mostly
+%%        y); masses vs inclusive (shift <= 0.12 MeV, errors 6–8% smaller); CB vs double-CB spread
+%%        reduced; per-cell chi2 and the worst cell (curved background -> background-shape
+%%        systematic).
+%% FIGS:  kinematic_bins_sigma_double_cb.png; kinematic_bins_worst_cell_double_cb.png;
+%%        table: masses inclusive vs simultaneous for both shapes.
+%% NUMBERS: 04_kinematic_bins.py --signal double_cb / crystal_ball (kinematic_bins_*.json).
+
+\todo{text}
+
+\subsection{Momentum scale}
+\label{sec:r-scale}
+%% SCOPE: data - MC peak position vs p (trend; a straight line does not describe it well) and vs
+%%        softer-muon pT (flat: the slice drift is a resolution effect, not calibration); the
+%%        overall offset (~ -4.5e-4) compared with the 3e-4 calibration uncertainty.
+%% FIGS:  momentum_scale.png.
+%% NUMBERS: 05_momentum_scale.py (momentum_scale.json).
+%% REFS:  LHCb:2023ood.
+
+\todo{text}
+
+\subsection{Systematic uncertainties and final masses}
+\label{sec:r-final}
+%% SCOPE: brief task 8. Table of shifts per variation and their quadrature sum; final masses
+%%        value +- stat +- fit model +- momentum scale and comparison with PDG; the 1S-calibrated
+%%        2S and 3S masses and the common-scale fit as a cross-check; toy study: fit bias
+%%        < 0.02 MeV, pull widths ~1 (errors trustworthy).
+%% FIGS:  table: systematics; table: final masses; toy_pulls.png (or appendix).
+%% NUMBERS: 06_final_masses.py (final_masses.json); 07_toys.py (toys.json).
+%% REFS:  ParticleDataGroup:2024cfk.
+
+\begin{table}[!htbp]
+    \centering
+    \caption{\todo{caption: final masses}}
+    \label{tab:final}
+    \begin{tabular}{lcccc}
+        \toprule
+        & Mass [\MeVcc] & Stat. & Fit model & Momentum scale \\
+        \midrule
+        \Ups{1S} & \todo{} & & & \\
+        \Ups{2S} & \todo{} & & & \\
+        \Ups{3S} & \todo{} & & & \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\todo{text}
+
+% ================================================================ 5 CONCLUSION
+\section{Conclusion}
+\label{sec:conclusion}
+%% SCOPE: the three masses and what limits them (momentum scale); what the fit studies showed
+%%        (MC tails rejected, degeneracies confined to shape parameters, kinematic bins reduce the
+%%        shape dependence); what would be done next (sigma parameterised in pT and y; a curved
+%%        background per cell; a momentum-scale calibration of this sample). Half a page.
+
+\todo{conclusion}
+
+% ================================================================ AI USE
+\section*{Declaration of AI use}
+\addcontentsline{toc}{section}{Declaration of AI use}
+%% SCOPE: what AI assistance was used for and what it was not, in line with the course guidance.
+%%        Keep factual and short.
+
+\todo{AI declaration}
+
+% ================================================================ REFERENCES
+\printbibliography[heading=bibintoc, title={References}]
+
+% ================================================================ APPENDICES
+\appendix
+
+\section{Fit results}
+\label{app:fits}
+%% SCOPE: full parameter tables of the baseline fits (data and simulation) and the per-cell table
+%%        of the kinematic fit; the toy pull figure if it does not fit in Sec. 4.
+%% NUMBERS: signal_shape.json, kinematic_bins_double_cb.json, toys.json.
+
+\section{Software and reproducibility}
+\label{app:software}
+%% SCOPE: half a page. The upsilon package (models, fitting, comparison) and the numbered scripts,
+%%        one per study; Python and package versions (numpy, scipy, iminuit 2.33.0, particle
+%%        1.1.1, mplhep); every figure and number regenerated with --dataset full.
+%% REFS:  dembinski2025iminuit; rodrigues2025particle.
+
+\begin{table}[!htbp]
+    \centering
+    \small
+    \caption{Scripts and the sections they produce.}
+    \label{tab:scripts}
+    \begin{tabularx}{\textwidth}{>{\ttfamily}l X}
+        \toprule
+        \normalfont Script & Produces \\
+        \midrule
+        01\_measure\_masses.py & Gaussian fits, error scans, residuals (\cref{sec:r-gauss}) \\
+        02\_signal\_shape.py   & simulation and data shape fits, model comparison, correlations (\cref{sec:r-shape,sec:r-correlations}) \\
+        03\_selection.py       & sideband purity, cut scan, slice stability (\cref{sec:r-selection}) \\
+        04\_kinematic\_bins.py & simultaneous fit in $(\pT, y)$ cells (\cref{sec:r-kinematic}) \\
+        05\_momentum\_scale.py & data $-$ simulation peak position (\cref{sec:r-scale}) \\
+        06\_final\_masses.py   & systematics and final masses (\cref{sec:r-final}) \\
+        07\_toys.py            & pseudo-experiment validation (\cref{sec:r-final}) \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\end{document}
