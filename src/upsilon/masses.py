@@ -98,7 +98,7 @@ def scale_corrected_masses(mu: np.ndarray, cov: np.ndarray, ref: int = 0,
 def common_scale(mu: np.ndarray, cov: np.ndarray, m_pdg: np.ndarray) -> ScaleFit:
     """Best single scale s with mu_k = s * m_pdg_k for all peaks, and how well it fits.
 
-    Minimise chi2(s) = (r - s)^T V^-1 (r - s), with r_k = mu_k / m_pdg_k and V the
+    Minimize chi2(s) = (r - s)^T V^-1 (r - s), with r_k = mu_k / m_pdg_k and V the
     covariance of r. ndof = number of peaks - 1. A small p-value means one momentum
     scale cannot explain all the offsets.
     """

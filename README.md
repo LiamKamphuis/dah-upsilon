@@ -38,7 +38,7 @@ ups.fit(model, mass, fix={"alpha_1S": 1.7, "n_1S": 2.5})   # tails fixed from MC
 | Path | Contents |
 |---|---|
 | `src/upsilon/io.py` | binary reader, `select()` cuts, column labels, project paths |
-| `src/upsilon/models.py` | `Shape`s normalised on the fit window (`Gaussian`, `DoubleGaussian`, `CrystalBall`, `DoubleCrystalBall`, `Exponential`; `JohnsonSU`, `Hypatia` **TODO**), `MassModel` (Σ N_k·shape_k, parameter sharing), `build_model()`, `BASELINE_SIGNAL` (double Crystal Ball, tails shared via `share_tails`) |
+| `src/upsilon/models.py` | `Shape`s normalised on the fit window (`Gaussian`, `DoubleGaussian`, `CrystalBall`, `DoubleCrystalBall`, `Exponential`; `KinematicResolutionModel` **TODO**, design notes only), `MassModel` (Σ N_k·shape_k, parameter sharing), `build_model()`, `BASELINE_SIGNAL` (double Crystal Ball, tails shared via `share_tails`) |
 | `src/upsilon/fitting.py` | `fit()` → `FitResult` (values, errors, summary, JSON) via iminuit |
 | `src/upsilon/plotting.py` | observable histograms, fit overlay, residuals/pulls, 2D vs mass; mplhep LHCb style, fit plots styled after Figs. 4-5 of arXiv:2312.01772 |
 | `scripts/measure_masses.py` | the core measurement: observables, 1S fit, three-peak fit, residuals/pulls |

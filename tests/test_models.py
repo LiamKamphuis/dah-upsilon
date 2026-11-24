@@ -1,10 +1,7 @@
 import numpy as np
 import pytest
 
-from upsilon.models import (CrystalBall, DoubleCrystalBall, DoubleGaussian, Exponential, Gaussian, Hypatia,
-                            JohnsonSU, build_model)
-
-todo = pytest.mark.xfail(raises=NotImplementedError, reason="TODO: scaffolded shape")
+from upsilon.models import CrystalBall, DoubleCrystalBall, DoubleGaussian, Exponential, Gaussian, build_model
 
 WINDOW = (9.0, 9.9)
 X = np.linspace(*WINDOW, 20001)
@@ -19,8 +16,6 @@ X = np.linspace(*WINDOW, 20001)
     (CrystalBall(WINDOW), (9.2, 0.05, 0.5, 1.5)),  # long tail cut off at lo
     (DoubleCrystalBall(WINDOW), (9.46, 0.033, 1.5, 3.3, 1.6, 0.43)),
     (DoubleCrystalBall(WINDOW), (9.2, 0.05, 0.5, 1.5, 3.0, 0.8)),  # wide tail cut off at lo
-    pytest.param(JohnsonSU(WINDOW), (9.46, 0.04, -0.5, 2.0), marks=todo),
-    pytest.param(Hypatia(WINDOW), (9.46, 0.04, -2.0, 1e-3, 0.0, 2.0, 2.0, 3.0, 5.0), marks=todo),
     (Exponential(WINDOW), (2.0,)),
     (Exponential(WINDOW), (0.0,)),
     (Exponential(WINDOW), (-1.0,)),

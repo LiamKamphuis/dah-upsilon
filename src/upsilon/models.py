@@ -186,71 +186,6 @@ class DoubleCrystalBall(Shape):
         return frac * self._cb.cdf(x, mu, sigma, alpha, n) + (1.0 - frac) * self._cb.cdf(x, mu, ratio * sigma, alpha, n)
 
 
-# --- scaffolds (TODO: implement, then add to SIGNALS / TAIL_PARAMS) --------------
-
-class JohnsonSU(Shape):
-    """TODO. Johnson's S_U distribution: a sinh-transformed Gaussian with tunable skew
-    (``gamma``) and tail weight (``delta``; large delta -> Gaussian). Smooth everywhere,
-    no junction like the CB's, and both tails heavier than Gaussian.
-
-    scipy: ``stats.johnsonsu.pdf(x, gamma, delta, loc=mu, scale=sigma)``; normalise on
-    the window with its cdf, as ``CrystalBall`` does.
-
-    Watch out: ``mu`` here is a location parameter, NOT the peak position. With skew,
-    the mode sits away from ``mu``, so report the mode (find it numerically) as the mass,
-    or account for the difference: this is the shape-bias question again.
-    """
-
-    PARAMS = (
-        Param("mu", 9.46, (8.5, 11.0)),
-        Param("sigma", 0.04, (5e-3, 0.2)),
-        Param("gamma", 0.0, (-5.0, 5.0)),
-        Param("delta", 2.0, (0.1, 20.0)),
-    )
-
-    def pdf(self, x, mu, sigma, gamma, delta):
-        raise NotImplementedError
-
-    def cdf(self, x, mu, sigma, gamma, delta):
-        raise NotImplementedError
-
-
-class Hypatia(Shape):
-    """TODO. The LHCb "Hypatia" shape (D. Martinez Santos, F. Dupertuis,
-    NIM A 764 (2014) 150, arXiv:1312.5000): a generalised-hyperbolic core with
-    power-law tails on both sides (``a1, n1`` low side, ``a2, n2`` high side).
-
-    Why it exists: it is what you get by *marginalising a Gaussian over a distribution
-    of per-event resolutions*, which is the mixture effect behind the double-CB result.
-    It is the physically motivated version of "two widths".
-
-    Practicalities: the core needs modified Bessel functions (``scipy.special.kv``) and
-    there is no closed-form cdf: integrate the pdf numerically on a fine grid over the
-    window and interpolate (cache the grid per parameter set: the fit calls this a lot).
-    Parameters are highly degenerate; expect to fix ``lambda_``/``zeta``/``beta`` and
-    tails from simulation. Read section 2 of the paper before choosing parameters:
-    the list below is a starting point, not settled.
-    """
-
-    PARAMS = (
-        Param("mu", 9.46, (8.5, 11.0)),
-        Param("sigma", 0.04, (5e-3, 0.2)),
-        Param("lambda_", -2.0, (-10.0, -0.01)),
-        Param("zeta", 1e-3, (0.0, 10.0)),
-        Param("beta", 0.0, (-1.0, 1.0)),
-        Param("a1", 2.0, (0.1, 10.0)),
-        Param("n1", 2.0, (1.01, 50.0)),
-        Param("a2", 3.0, (0.1, 10.0)),
-        Param("n2", 5.0, (1.01, 50.0)),
-    )
-
-    def pdf(self, x, *p):
-        raise NotImplementedError
-
-    def cdf(self, x, *p):
-        raise NotImplementedError
-
-
 class KinematicResolutionModel:
     """TODO (design notes only). Use each event's kinematics in the mass fit.
 
@@ -305,8 +240,8 @@ class Exponential(Shape):
 SIGNALS: dict[str, type[Shape]] = {
     "gauss": Gaussian, "double_gauss": DoubleGaussian, "crystal_ball": CrystalBall, "double_cb": DoubleCrystalBall,
 }
-#: Signal shape for the final measurement (tails shared across peaks, see ``share_tails``).
-#: Best fit on the full data: chi2/ndof = 342/235 vs 694/237 for a single Crystal Ball.
+
+# Signal shape for the final measurement (tails shared across peaks, see ``share_tails``).
 BASELINE_SIGNAL = "double_cb"
 TAIL_PARAMS: dict[str, tuple[str, ...]] = {
     "gauss": (), "double_gauss": ("ratio", "frac"), "crystal_ball": ("alpha", "n"),
