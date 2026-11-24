@@ -1,5 +1,4 @@
-"""Tests for masses.py. The TODO functions are xfail until implemented: a wrong
-implementation still shows up as a FAIL (only NotImplementedError is expected).
+"""Tests for masses.py.
 
 The error checks use toys: draw many mass vectors from N(mu, cov), push each through
 the formula, and compare the spread with the propagated error.
@@ -15,7 +14,6 @@ SIG = np.array([0.25, 0.70, 1.20]) * 1e-3
 CORR = np.array([[1.0, 0.4, 0.3], [0.4, 1.0, 0.5], [0.3, 0.5, 1.0]])  # strong, so ignoring it fails
 COV = CORR * np.outer(SIG, SIG)
 PDG = np.array([9.4603, 10.02326, 10.3552])
-todo = pytest.mark.xfail(raises=NotImplementedError, reason="TODO: implement in masses.py")
 
 
 @pytest.fixture(scope="module")
@@ -32,14 +30,12 @@ def test_apply_bias():
     assert cov[0, 2] - COV[0, 2] == pytest.approx(k[0] * k[2] * 1e-8)
 
 
-@todo
 def test_mass_difference(toys):
     value, error = masses.mass_difference(MU, COV, 1, 0)
     assert value == pytest.approx(MU[1] - MU[0])
     assert error == pytest.approx(np.std(toys[:, 1] - toys[:, 0]), rel=0.01)
 
 
-@todo
 def test_scale_corrected_masses(toys):
     mu, cov = masses.scale_corrected_masses(MU, COV, ref=0, m_ref=PDG[0])
     assert mu == pytest.approx(MU * PDG[0] / MU[0])
@@ -48,7 +44,6 @@ def test_scale_corrected_masses(toys):
     assert cov[1, 2] == pytest.approx(np.cov(corrected[:, 1], corrected[:, 2])[0, 1], rel=0.02)
 
 
-@todo
 def test_common_scale_exact():
     s = 0.99965
     fit = masses.common_scale(s * PDG, COV, PDG)
@@ -57,7 +52,6 @@ def test_common_scale_exact():
     assert fit.ndof == 2 and fit.pvalue == pytest.approx(1.0)
 
 
-@todo
 def test_common_scale_error(toys):
     fits = [masses.common_scale(t, COV, PDG) for t in toys[:5000]]
     assert fits[0].error == pytest.approx(np.std([f.s for f in fits]), rel=0.03)

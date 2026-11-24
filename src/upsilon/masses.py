@@ -9,15 +9,13 @@ The fitted masses sit a few MeV below PDG. Two effects can do that:
 
 Everything works on the vector of the three masses and its 3x3 covariance
 (order ``PEAKS``), so the correlations between peaks carry through.
-
-TODO (you): ``mass_difference``, ``scale_corrected_masses``, ``common_scale``.
-Each has a test in ``tests/test_masses.py`` marked xfail until it is implemented.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 
 import numpy as np
+import scipy.stats
 
 from .fitting import FitResult, fit
 from .models import PDG_MASS, build_model
@@ -57,8 +55,9 @@ def shape_bias(signal: str, mc_mass: np.ndarray, m_true: float = PDG_MASS["1S"],
                window: tuple[float, float] = (9.0, 9.9)) -> Bias:
     """Fit simulation (pure Upsilon(1S)) with ``signal`` and return mu_fit - m_true.
 
-    ``m_true`` is the mass the simulation was *generated* with. We assume PDG;
-    change it here if you find out otherwise.
+    ``m_true`` is the mass the simulation was *generated* with: the PDG value, taken
+    from the current PDG table (``PDG_MASS``). The generator used the PDG edition of
+    its time, which can differ from today's by ~0.1 MeV.
     """
     model = build_model(("1S",), signal=signal, window=window, background=None)
     r = fit(model, mc_mass, progress=False)
@@ -77,11 +76,9 @@ def apply_bias(mu: np.ndarray, cov: np.ndarray, bias: Bias, sigma: np.ndarray) -
     return mu - bias.value * k, cov + np.outer(k, k) * bias.error**2
 
 
-# --- TODO: your error propagation ------------------------------------------------
-
 def mass_difference(mu: np.ndarray, cov: np.ndarray, i: int, j: int) -> tuple[float, float]:
-    """mu[i] - mu[j] and its error, including the correlation between the two masses."""
-    raise NotImplementedError
+    """Difference in mass peak fits and its error, including the correlation between the two masses."""
+    return mu[i] - mu[j], np.sqrt(cov[i, i] + cov[j, j] - 2 * cov[i, j])
 
 
 def scale_corrected_masses(mu: np.ndarray, cov: np.ndarray, ref: int = 0,
@@ -91,7 +88,11 @@ def scale_corrected_masses(mu: np.ndarray, cov: np.ndarray, ref: int = 0,
     The corrected ``ref`` mass is m_ref by construction, with zero error. The others
     inherit the error on s, which is correlated with their own fitted mass.
     """
-    raise NotImplementedError
+    s = mu[ref] / m_ref
+    J = np.eye(len(mu)) / s
+    J[:, ref] = -mu / (s * mu[ref])
+    J[ref, :] = 0
+    return mu / s, J @ cov @ J.T
 
 
 def common_scale(mu: np.ndarray, cov: np.ndarray, m_pdg: np.ndarray) -> ScaleFit:
@@ -101,4 +102,13 @@ def common_scale(mu: np.ndarray, cov: np.ndarray, m_pdg: np.ndarray) -> ScaleFit
     covariance of r. ndof = number of peaks - 1. A small p-value means one momentum
     scale cannot explain all the offsets.
     """
-    raise NotImplementedError
+    r = mu / m_pdg
+    V = cov / np.outer(m_pdg, m_pdg)
+    w = np.linalg.solve(V, np.ones(len(r)))
+    s = (w @ r) / w.sum()
+    error = np.sqrt(1 / w.sum())
+    d = r - s
+    chi2 = d @ np.linalg.solve(V, d)
+    ndof = len(mu) - 1
+    pvalue = scipy.stats.chi2.sf(chi2, ndof)
+    return ScaleFit(s, error, chi2, ndof, pvalue)
