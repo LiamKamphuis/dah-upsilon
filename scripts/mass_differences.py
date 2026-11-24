@@ -2,7 +2,6 @@
 
 For each signal shape: fit data (one set of tail parameters shared by all peaks), measure the shape bias on
 simulation, subtract it, then compare mass differences and scale-corrected masses with PDG.
-Needs the TODO functions in src/upsilon/masses.py.
 """
 import argparse
 
@@ -25,6 +24,9 @@ MEV = 1e3
 
 for signal in args.signals:
     result = ups.fit(ups.build_model(signal=signal, share=share_tails(signal)), data, binned=args.binned)
+    if not result.valid:
+        print(f"\nWARNING: {signal} data fit is not valid; its covariance (and every error below) is unreliable")
+        print(result.minuit.fmin)
     bias = masses.shape_bias(signal, mc)
     raw, raw_cov = masses.mass_vector(result)
     mu, cov = masses.apply_bias(raw, raw_cov, bias, masses.widths(result))
@@ -46,5 +48,7 @@ for signal in args.signals:
         print(f"  {masses.PEAKS[i]}: {MEV * (smu[i] - pdg[i]):+.2f} +- {MEV * np.sqrt(scov[i, i]):.2f} MeV")
 
     sf = masses.common_scale(mu, cov, pdg)
+    w = np.linalg.solve(cov / np.outer(pdg, pdg), np.ones(len(pdg)))
     print(f"common scale: s - 1 = ({1e4 * (sf.s - 1):+.2f} +- {1e4 * sf.error:.2f}) x 1e-4, "
-          f"chi2/ndof = {sf.chi2:.2f}/{sf.ndof}, p = {sf.pvalue:.3g}")
+          f"chi2/ndof = {sf.chi2:.2f}/{sf.ndof}, p = {sf.pvalue:.3g}, "
+          f"weights ({', '.join(masses.PEAKS)}) = {np.round(w / w.sum(), 3)}")
