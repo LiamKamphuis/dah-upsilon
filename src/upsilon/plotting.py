@@ -1,11 +1,18 @@
 """Plots: input variables, fit overlays and residuals/pulls.
 
-Every function returns the matplotlib Figure; pass ``save="name.png"`` to also
-write it into ``output/figures/``.
+Every function returns the matplotlib Figure; pass ``save="name.png"`` (or
+``"small/name.png"``) to also write it into ``output/figures/``.
+
+Style: mplhep's LHCb style (serif font, inward ticks on all sides), set on import so
+the scripts' own plots match. Fit plots follow Fig. 5 of the LHCb momentum-scale
+paper (arXiv:2312.01772): black data points, total fit in solid red, signal peaks in
+dashed blue, background in dotted black, experiment label inside the top right.
+These are not collaboration-approved plots, so the label says "LHCb Unofficial".
 """
 from __future__ import annotations
 
 import matplotlib.pyplot as plt
+import mplhep as hep
 import numpy as np
 
 from .fitting import FitResult
@@ -13,18 +20,26 @@ from .io import COLUMNS, FIGURE_DIR, LABELS
 
 MASS_LABEL = LABELS["mass"]
 
+hep.style.use("LHCb2")
+
+
+def _experiment_label(ax, simulation: bool = False):
+    """"LHCb Unofficial" (data: "2015 (13 TeV)") or "LHCb Simulation Unofficial" in the top left."""
+    hep.lhcb.label("Unofficial", ax=ax, loc=1, data=not simulation, rlabel="(13 TeV)" if simulation else "2015 (13 TeV)")
+
 
 def _save(fig, save):
     if save:
-        FIGURE_DIR.mkdir(parents=True, exist_ok=True)
-        fig.savefig(FIGURE_DIR / save, dpi=150, bbox_inches="tight")
+        path = FIGURE_DIR / save
+        path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(path, dpi=150, bbox_inches="tight")
     return fig
 
 
 def plot_variables(events: np.ndarray, bins: int = 200, ranges: dict | None = None, save: str | None = None):
     """Histogram each observable (task 1). ``ranges`` maps column -> (lo, hi)."""
     ranges = ranges or {}
-    fig, axes = plt.subplots(2, 3, figsize=(15, 8))
+    fig, axes = plt.subplots(2, 3, figsize=(24, 13))
     for ax, col in zip(axes.flat, COLUMNS):
         ax.hist(events[col], bins=bins, range=ranges.get(col), histtype="step", color="k")
         ax.set(xlabel=LABELS[col], ylabel="Candidates / bin", title=f"Distribution of {LABELS[col]}")
@@ -42,24 +57,42 @@ def _binned(result: FitResult, bins: int):
 
 
 def plot_fit(result: FitResult, bins: int = 250, pulls: bool = True, log: bool = False,
-             title: str | None = None, save: str | None = None):
-    """Data with fitted model and its components; optional pull panel below."""
+             title: str | None = None, simulation: bool = False, save: str | None = None):
+    """Data with fitted model and its components; optional pull panel below.
+
+    ``simulation=True`` labels the plot as LHCb simulation (fits to the MC sample).
+    """
     edges, counts, comps, expected = _binned(result, bins)
     centres = 0.5 * (edges[1:] + edges[:-1])
 
     if pulls:
-        fig, (ax, axp) = plt.subplots(2, 1, figsize=(9, 7), sharex=True, gridspec_kw={"height_ratios": [3, 1]})
+        fig, (ax, axp) = plt.subplots(2, 1, figsize=(12, 12), sharex=True, gridspec_kw={"height_ratios": [3, 1]})
     else:
-        fig, ax = plt.subplots(figsize=(9, 5.5))
+        fig, ax = plt.subplots()  # style default size
 
-    ax.errorbar(centres, counts, yerr=np.sqrt(counts), fmt="k.", ms=3, label="Data")
-    ax.stairs(expected, edges, color="C0", lw=1.5, label="Total fit")
+    data = ax.errorbar(centres, counts, yerr=np.sqrt(counts), fmt="k.", ms=4)
+    total, = ax.plot(centres, expected, color="red", lw=2)
+    handles, labels = [data, total], ["Simulation" if simulation else "Data", "Total fit"]
+    peaks = [k for k in comps if k != "bkg"]
     for k, c in comps.items():
-        ax.stairs(c, edges, ls="--", label=k)
+        if k == "bkg":
+            bkg, = ax.plot(centres, c, color="k", ls=":", lw=2)
+        else:
+            sig, = ax.plot(centres, c, color="blue", ls=(0, (8, 4)), lw=1.5)
+    # One peak: name the decay, as in Fig. 4 of arXiv:2312.01772; several: one entry for all
+    handles.append(sig)
+    labels.append(rf"$\Upsilon({peaks[0]})\to\mu^+\mu^-$" if len(peaks) == 1 else r"$\Upsilon$ signal")
+    if "bkg" in comps:
+        handles.append(bkg)
+        labels.append("Background")
     ax.set(ylabel=f"Candidates / ({1e3 * (edges[1] - edges[0]):.0f} MeV/$c^2$)", title=title or "Mass fit")
     if log:
         ax.set_yscale("log")
-    ax.legend()
+    else:
+        ax.set_ylim(0, 1.4 * counts.max())  # headroom for the label and legend, as in Fig. 5
+    compact = {"fontsize": 0.75 * plt.rcParams["legend.fontsize"], "handlelength": 1.2, "labelspacing": 0.3} if len(peaks) == 1 else {}
+    ax.legend(handles, labels, loc="upper right", **compact)
+    _experiment_label(ax, simulation)
 
     if pulls:
         plot_residuals(result, bins, kind="pull", ax=axp)
@@ -82,8 +115,8 @@ def plot_residuals(result: FitResult, bins: int = 250, kind: str = "residual", a
         ax.axhspan(-2, 2, color="0.9")
     else:
         y, yerr, ylabel = counts - expected, np.sqrt(expected), "Data $-$ fit"
-    ax.errorbar(centres, y, yerr=yerr, fmt="k.", ms=3)
-    ax.axhline(0, color="C0")
+    ax.errorbar(centres, y, yerr=yerr, fmt="k.", ms=4)
+    ax.axhline(0, color="red")
     ax.set(xlabel=MASS_LABEL, ylabel=ylabel, title=f"{ylabel} per bin")
     return _save(fig, save)
 

@@ -60,6 +60,7 @@ class FitResult:
         return out
 
     def save(self, path: str | Path) -> None:
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
         Path(path).write_text(json.dumps(self.to_dict(), indent=2))
 
 

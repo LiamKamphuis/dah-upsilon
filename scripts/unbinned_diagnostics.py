@@ -19,7 +19,7 @@ from iminuit import Minuit
 from iminuit.cost import ExtendedUnbinnedNLL
 
 import upsilon as ups
-from upsilon.io import RESULT_DIR
+from upsilon.io import RESULT_DIR, output_subdir
 from upsilon.models import BASELINE_SIGNAL, share_tails
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -130,7 +130,7 @@ if args.migrad:
     for s in SHAPE:
         print(f"   {s}: {m.values[s]:.4g} +- {m.errors[s]:.3g}  (binned {binned.values[s]:.4g} +- {binned.errors[s]:.3g})")
 
-RESULT_DIR.mkdir(parents=True, exist_ok=True)
-path = RESULT_DIR / f"unbinned_diagnostics_{args.dataset}.json"
+path = RESULT_DIR / output_subdir(args.dataset) / "unbinned_diagnostics.json"
+path.parent.mkdir(parents=True, exist_ok=True)
 path.write_text(json.dumps(results, indent=2, default=float))
 print(f"\nsaved {path}")

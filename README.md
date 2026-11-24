@@ -6,7 +6,7 @@ dimuon data (brief: `docs/project_F1_description.md`, paper: `docs/JHEP06(2013)0
 ## Setup
 
 ```bash
-uv sync                 # creates .venv (Python 3.12) with numpy, scipy, iminuit, matplotlib, pytest
+uv sync                 # creates .venv (Python 3.12) with numpy, scipy, iminuit, matplotlib, mplhep, pytest
 uv run pytest           # model normalisation + fit-recovery tests
 ```
 
@@ -40,13 +40,13 @@ ups.fit(model, mass, fix={"alpha_1S": 1.7, "n_1S": 2.5})   # tails fixed from MC
 | `src/upsilon/io.py` | binary reader, `select()` cuts, column labels, project paths |
 | `src/upsilon/models.py` | `Shape`s normalised on the fit window (`Gaussian`, `DoubleGaussian`, `CrystalBall`, `DoubleCrystalBall`, `Exponential`; `JohnsonSU`, `Hypatia` **TODO**), `MassModel` (Σ N_k·shape_k, parameter sharing), `build_model()`, `BASELINE_SIGNAL` (double Crystal Ball, tails shared via `share_tails`) |
 | `src/upsilon/fitting.py` | `fit()` → `FitResult` (values, errors, summary, JSON) via iminuit |
-| `src/upsilon/plotting.py` | observable histograms, fit overlay, residuals/pulls, 2D vs mass |
+| `src/upsilon/plotting.py` | observable histograms, fit overlay, residuals/pulls, 2D vs mass; mplhep LHCb style, fit plots styled after Figs. 4-5 of arXiv:2312.01772 |
 | `scripts/measure_masses.py` | the core measurement: observables, 1S fit, three-peak fit, residuals/pulls |
 | `scripts/signal_shape.py` | all signal shapes in one comparison table (MC vs floating tails), MC-tail likelihood-ratio test, profile of μ(1S) |
 | `scripts/kinematics.py` | observables vs mass; TODO purity and (pt, η) bins |
 | `scripts/systematics.py` | refit with one choice changed; table of mass shifts |
 | `scripts/unbinned_diagnostics.py` | why the unbinned baseline fit on data ends invalid (flat width direction, FCN smoothness, HESSE/MIGRAD from the binned minimum) |
-| `output/figures`, `output/results` | generated plots (gitignored) and fit/result JSON (tracked) |
+| `output/figures/<dataset>`, `output/results/<dataset>` | generated plots (gitignored) and fit/result JSON (tracked), one subfolder per dataset (`small`, `full`, `mc`) |
 
 Scripts take `--dataset small|full|mc` (default `small`); `measure_masses.py --binned` is much faster.
 

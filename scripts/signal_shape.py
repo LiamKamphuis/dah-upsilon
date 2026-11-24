@@ -8,6 +8,7 @@ compare every model against every other. ``--signal`` restricts it to one shape.
 import argparse
 
 import upsilon as ups
+from upsilon.io import output_subdir
 from upsilon.models import PDG_MASS, SIGNALS, TAIL_PARAMS, share_tails
 
 SHAPES = [s for s in SIGNALS if TAIL_PARAMS[s]]  # shapes with tail parameters (not gauss)
@@ -32,7 +33,7 @@ for signal in SHAPES if args.signal == "all" else [args.signal]:
     fits[f"{signal} (MC tails)"] = ups.fit(model, mass, fix=fixed, binned=args.binned)
     fits[f"{signal} (shared tails)"] = shared = ups.fit(model, mass, binned=args.binned)
     print(f"\n{signal}: data, shared tails\n" + shared.summary())
-    ups.plotting.plot_fit(shared, save=f"fit_3peaks_{signal}_{args.dataset}.png")
+    ups.plotting.plot_fit(shared, save=f"{output_subdir(args.dataset)}/fit_3peaks_{signal}.png")
 
 print("\nModel comparison\n" + ups.compare.table(fits))
 
@@ -45,4 +46,4 @@ for signal in SHAPES if args.signal == "all" else [args.signal]:
 
 # Does the shape choice move the mass by more than its statistical error?
 profiled = {name: r for name, r in fits.items() if name == "gauss" or name.endswith("(shared tails)")}
-ups.plotting.plot_profiles(profiled, "mu_1S", ref=PDG_MASS["1S"], save=f"profile_mu_1S_{args.dataset}.png")
+ups.plotting.plot_profiles(profiled, "mu_1S", ref=PDG_MASS["1S"], save=f"{output_subdir(args.dataset)}/profile_mu_1S.png")

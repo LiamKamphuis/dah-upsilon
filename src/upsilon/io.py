@@ -29,6 +29,12 @@ OUTPUT_DIR = PROJECT_ROOT / "output"
 FIGURE_DIR = OUTPUT_DIR / "figures"
 RESULT_DIR = OUTPUT_DIR / "results"
 
+
+def output_subdir(dataset: str) -> str:
+    """Subfolder of ``FIGURE_DIR`` and ``RESULT_DIR`` for a dataset: its short name
+    ("small", "full", "mc"), or the file stem when a path to a .bin file is given."""
+    return Path(dataset).stem
+
 #: Short names for the provided datasets.
 DATASETS = {
     "full": "ups-15.bin",
