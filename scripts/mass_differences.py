@@ -17,10 +17,21 @@ parser.add_argument("--binned", action="store_true")
 parser.add_argument("--signals", nargs="+", default=[BASELINE_SIGNAL, "crystal_ball", "double_gauss", "gauss"])
 args = parser.parse_args()
 
-data = ups.load(args.dataset)["mass"]
+events = ups.load(args.dataset)
+data = events["mass"]
 mc = ups.load("mc")["mass"]
 pdg = np.array([PDG_MASS[p] for p in masses.PEAKS])
 MEV = 1e3
+
+# Calibrating on 1S assumes all peaks see the same momentum scale. The scale drifts with dimuon
+# momentum (scripts/momentum_scale.py), so check the peaks' momentum spectra match: mean p in
+# +-50 MeV around each peak, minus equal-width sidebands at 70-120 MeV (linear background).
+print("sideband-subtracted mean dimuon momentum per peak:")
+for p, m_pdg in zip(masses.PEAKS, pdg):
+    d = np.abs(data - m_pdg)
+    sig, side = d < 0.05, (d > 0.07) & (d < 0.12)
+    mean_p = (events["p"][sig].sum() - events["p"][side].sum()) / (sig.sum() - side.sum())
+    print(f"  {p}: <p> = {mean_p:.1f} GeV/c")
 
 for signal in args.signals:
     result = ups.fit(ups.build_model(signal=signal, share=share_tails(signal)), data, binned=args.binned)

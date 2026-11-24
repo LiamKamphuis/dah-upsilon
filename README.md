@@ -45,6 +45,7 @@ ups.fit(model, mass, fix={"alpha_1S": 1.7, "n_1S": 2.5})   # tails fixed from MC
 | `scripts/signal_shape.py` | all signal shapes in one comparison table (MC vs floating tails), MC-tail likelihood-ratio test, profile of μ(1S) |
 | `scripts/kinematics.py` | observables vs mass; TODO purity and (pt, η) bins |
 | `scripts/systematics.py` | refit with one choice changed; table of mass shifts |
+| `scripts/unbinned_diagnostics.py` | why the unbinned baseline fit on data ends invalid (flat width direction, FCN smoothness, HESSE/MIGRAD from the binned minimum) |
 | `output/figures`, `output/results` | generated plots and fit JSON (gitignored) |
 
 Scripts take `--dataset small|full|mc` (default `small`); `measure_masses.py --binned` is much faster.
