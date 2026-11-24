@@ -25,6 +25,11 @@ Limits = tuple[float | None, float | None]
 #: PDG Monte Carlo IDs of the Upsilon(nS) states, used as starting vals.
 PDG_ID = {"1S": 553, "2S": 100553, "3S": 200553}
 PDG_MASS = {peak: Particle.from_pdgid(pid).mass / 1e3 for peak, pid in PDG_ID.items()}
+#: Masses the simulation was generated with, in GeV/c^2: the PDG values of its time.
+#: C. Patrignani et al. (Particle Data Group), Chin. Phys. C 40, 100001 (2016), listings:
+#: 9460.30 +- 0.26, 10023.26 +- 0.31, 10355.2 +- 0.5 MeV (1S identical in the 2014 edition).
+#: Which edition the generator used is our assumption (2015 data, 2015/16 simulation).
+MC_MASS = {"1S": 9.46030, "2S": 10.02326, "3S": 10.3552}
 
 
 @dataclass(frozen=True)
@@ -123,8 +128,9 @@ class CrystalBall(Shape):
 
     ``alpha`` is where the tail starts, in units of ``sigma`` below ``mu``, and
     ``n`` is the power-law exponent (scipy's ``beta`` and ``m``). The shape is
-    truncated and normalized on the window via scipy's cdf. ``alpha`` and ``n``
-    are strongly correlated and weakly constrained by data, hence fixing them from MC.
+    truncated and normalized on the window via scipy's cdf. ``alpha`` and ``n`` are
+    strongly anti-correlated (a tail starting nearer the core but falling faster looks
+    alike), and on data the tail also trades against the background under it.
     """
 
     PARAMS = (
@@ -156,11 +162,10 @@ class DoubleCrystalBall(Shape):
     """Two Crystal Balls sharing ``mu``, ``alpha`` and ``n``, with widths ``sigma`` and
     ``ratio * sigma`` and narrow fraction ``frac``.
 
-    Why: the mass resolution varies with the kinematics (sigma_1S ~ 38-52 MeV across
-    eta and pT), so the peak is a blend of Gaussians: sharper core and heavier wings than
-    one Gaussian. A single CB core leaves a symmetric W-shaped pull pattern and drags its
-    tail inwards to absorb the low-side wing. The LHCb paper uses this shape for its
-    mass-model systematic.
+    Why: the mass resolution varies with the kinematics (sigma_1S ~ 32-65 MeV across the
+    (pT, y) cells of scripts/04_kinematic_bins.py), so the inclusive peak is a blend of widths:
+    a sharper core and heavier wings than one Crystal Ball. The LHCb paper uses this shape
+    for its mass-model systematic.
 
     ``alpha`` is in units of each component's own sigma, so the two tails start at
     different masses (a modelling choice; an absolute tail start is the alternative).
@@ -184,31 +189,6 @@ class DoubleCrystalBall(Shape):
 
     def cdf(self, x, mu, sigma, alpha, n, ratio, frac):
         return frac * self._cb.cdf(x, mu, sigma, alpha, n) + (1.0 - frac) * self._cb.cdf(x, mu, ratio * sigma, alpha, n)
-
-
-class KinematicResolutionModel:
-    """TODO (design notes only). Use each event's kinematics in the mass fit.
-
-    Two routes; the paper (section 5) uses a mix of both:
-
-    1. **Fit in kinematic bins** (simpler; brief item 7, ``scripts/kinematics.py``).
-       One ``MassModel`` per (pT, eta) cell, each with its own sigma, yields and
-       background; masses common. Build per-cell models with parameters renamed by cell
-       (e.g. ``sigma_1S_c3``) and *add* the iminuit costs: parameters with equal names
-       are shared. The paper fixes the masses from the global fit and parameterises
-       sigma_1S as linear in pT and y.
-
-    2. **Per-event resolution** (more powerful, more pitfalls): an unbinned fit to
-       p(m | pT, eta) with sigma_i = sigma_0 * (1 + a (pT_i - pT_0) + b (eta_i - eta_0)).
-       iminuit's unbinned costs accept multi-row data, x = (mass, pt, eta). Pitfall
-       (Punzi, physics/0401045): if signal and background have *different* pT/eta
-       distributions, a conditional likelihood biases the yields unless those
-       distributions are modelled too. Check this before trusting yields.
-
-    Notes: the ``eta`` column is pseudorapidity (= arcsinh(p_z / pT), checked to 1e-7),
-    not the rapidity y the paper bins in. y = 0.5 ln((E + p_z) / (E - p_z)) with
-    E = sqrt(p^2 + m^2), p_z = sqrt(p^2 - pT^2).
-    """
 
 
 # --- background shapes ---------------------------------------------------------
@@ -237,6 +217,56 @@ class Exponential(Shape):
         return np.expm1(-c * self._x(x)) / np.expm1(-c * width)
 
 
+class Quadratic(Shape):
+    """Second-order polynomial ``1 + a1 P1(t) + a2 P2(t)`` in Legendre polynomials of
+    t = 2 (x - lo) / (hi - lo) - 1, normalized on the window.
+
+    The alternative background for the systematic: it can curve where the exponential
+    cannot. P1 and P2 integrate to zero on [-1, 1], so the normalization does not depend
+    on a1, a2 (but the density goes negative if they are too large: check the fit).
+    """
+
+    PARAMS = (Param("a1", -0.3, (-1.0, 1.0)), Param("a2", 0.0, (-1.0, 1.0)))
+
+    def _t(self, x):
+        lo, hi = self.window
+        return 2 * (np.asarray(x, dtype=float) - lo) / (hi - lo) - 1
+
+    def pdf(self, x, a1, a2):
+        t = self._t(x)
+        return (1 + a1 * t + a2 * 0.5 * (3 * t**2 - 1)) / (self.window[1] - self.window[0])
+
+    def cdf(self, x, a1, a2):
+        t = self._t(x)
+        return 0.5 * ((t + 1) + a1 * 0.5 * (t**2 - 1) + a2 * 0.5 * (t**3 - t))
+
+
+class ScaledWidth(Shape):
+    """``shape`` with its ``sigma`` multiplied by a fixed ``factor``.
+
+    Ties a peak's width to another peak's: share ``sigma_2S -> sigma_1S`` and wrap the
+    2S shape with ``factor = m_2S / m_1S``. Same parameters as ``shape``.
+    """
+
+    def __init__(self, shape: Shape, factor: float):
+        self.window, self.params, self.shape, self.factor = shape.window, shape.params, shape, float(factor)
+        self._i = [p.name for p in shape.params].index("sigma")
+
+    def _scaled(self, p):
+        p = list(p)
+        p[self._i] *= self.factor
+        return p
+
+    def pdf(self, x, *p):
+        return self.shape.pdf(x, *self._scaled(p))
+
+    def cdf(self, x, *p):
+        return self.shape.cdf(x, *self._scaled(p))
+
+    def __repr__(self) -> str:
+        return f"{self.shape!r} x sigma*{self.factor:.5f}"
+
+
 SIGNALS: dict[str, type[Shape]] = {
     "gauss": Gaussian, "double_gauss": DoubleGaussian, "crystal_ball": CrystalBall, "double_cb": DoubleCrystalBall,
 }
@@ -247,7 +277,7 @@ TAIL_PARAMS: dict[str, tuple[str, ...]] = {
     "gauss": (), "double_gauss": ("ratio", "frac"), "crystal_ball": ("alpha", "n"),
     "double_cb": ("alpha", "n", "ratio", "frac"),
 }
-BACKGROUNDS: dict[str, type[Shape]] = {"exp": Exponential}
+BACKGROUNDS: dict[str, type[Shape]] = {"exp": Exponential, "poly2": Quadratic}
 
 
 # --- composite model -----------------------------------------------------------
@@ -261,6 +291,7 @@ class MassModel:
         self.window = (float(window[0]), float(window[1]))
         self.components = dict(components)
         share = dict(share or {})
+        self.share = share
         params: dict[str, Param] = {}
 
         def add(name: str, p: Param) -> int:
@@ -277,7 +308,7 @@ class MassModel:
             self._yield_index[k] = add(f"N_{k}", Param("N", 1.0, (0.0, None)))
             self._index[k] = [add(f"{p.name}_{k}", p) for p in shape.params]
 
-        unused = set(share) - {f"{p.name}_{k}" for k, s in self.components.items() for p in s.params}
+        unused = set(share) - {n for k, s in self.components.items() for n in (f"N_{k}", *(f"{p.name}_{k}" for p in s.params))}
         if unused:
             raise ValueError(f"share refers to unknown parameter(s) {sorted(unused)}")
         self.params = params
@@ -287,6 +318,19 @@ class MassModel:
     @property
     def names(self) -> list[str]:
         return list(self.params)
+
+    def per_cell(self, cell: str, common: set[str]) -> MassModel:
+        """This model with every parameter *not* in ``common`` renamed ``<name>_<cell>``.
+
+        For simultaneous fits in kinematic cells: add the cells' costs and the parameters
+        that keep their name (e.g. the masses) are shared, the renamed ones are per cell.
+        """
+        rename = {}
+        for k, shape in self.components.items():
+            for name in [f"N_{k}", *(f"{p.name}_{k}" for p in shape.params)]:
+                target = self.share.get(name, name)
+                rename[name] = target if target in common else f"{target}_{cell}"
+        return MassModel(self.window, self.components, rename)
 
     def _split(self, par):
         for k, shape in self.components.items():
@@ -303,6 +347,12 @@ class MassModel:
     def scaled_cdf(self, xe, *par):
         """sum_k N_k cdf_k(xe)."""
         return sum(n * shape.cdf(xe, *p) for _, shape, n, p in self._split(par))
+
+    def sigma(self, k: str, values: dict[str, float]) -> float:
+        """Component ``k``'s effective ``sigma`` at ``values`` (including a ``ScaledWidth`` factor)."""
+        shape = self.components[k]
+        name = self.names[self._index[k][[p.name for p in shape.params].index("sigma")]]
+        return values[name] * getattr(shape, "factor", 1.0)
 
     def component_counts(self, edges, values: dict[str, float]) -> dict[str, np.ndarray]:
         """Expected counts per bin for each component at ``values``.
@@ -333,10 +383,14 @@ def build_model(
     window: Window = (9.0, 11.0),  # data files start at 9.0 GeV (brief says 8.5)
     share: dict[str, str] | None = None,
     mass_range: float = 0.1,
+    tie_widths: bool = False,
 ) -> MassModel:
     """Signal peak(s) + background. Means start at PDG values, limited to ``+- mass_range``.
 
     ``background=None`` gives a signal-only model, for simulation (pure signal).
+    ``tie_widths=True`` fixes sigma_k = sigma_1S * m_k / m_1S (PDG mass ratio), as in
+    JHEP06(2013)064: the relative momentum resolution, and so sigma/m, is about the same
+    for all three peaks. It removes two width parameters.
 
     Examples::
 
@@ -347,6 +401,10 @@ def build_model(
     for peak in peaks:
         m = PDG_MASS[peak]
         components[peak] = SIGNALS[signal](window, mu=m, limits={"mu": (m - mass_range, m + mass_range)})
+        if tie_widths and peak != peaks[0]:
+            components[peak] = ScaledWidth(components[peak], m / PDG_MASS[peaks[0]])
+    if tie_widths:
+        share = {**(share or {}), **{f"sigma_{p}": f"sigma_{peaks[0]}" for p in peaks[1:]}}
     if background is not None:
         components["bkg"] = BACKGROUNDS[background](window)
     return MassModel(window, components, share)

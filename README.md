@@ -30,25 +30,35 @@ Model choice is a set of arguments, so alternatives are one-line changes:
 ```python
 ups.build_model(signal="crystal_ball",
                 share={"alpha_2S": "alpha_1S", "alpha_3S": "alpha_1S"})
-ups.fit(model, mass, fix={"alpha_1S": 1.7, "n_1S": 2.5})   # tails fixed from MC
+ups.fit(model, mass, fix={"alpha_1S": 1.7, "n_1S": 2.5})   # e.g. tails fixed from MC
 ```
 
 ## Layout
 
+The package holds the reusable fitting machinery; each script is one section of the report and
+writes its figures to `output/figures/<dataset>/` and its numbers to `output/results/<dataset>/`
+(both gitignored). Every number in the report comes from one of these scripts.
+
 | Path | Contents |
 |---|---|
-| `src/upsilon/io.py` | binary reader, `select()` cuts, column labels, project paths |
-| `src/upsilon/models.py` | `Shape`s normalised on the fit window (`Gaussian`, `DoubleGaussian`, `CrystalBall`, `DoubleCrystalBall`, `Exponential`; `KinematicResolutionModel` **TODO**, design notes only), `MassModel` (Σ N_k·shape_k, parameter sharing), `build_model()`, `BASELINE_SIGNAL` (double Crystal Ball, tails shared via `share_tails`) |
-| `src/upsilon/fitting.py` | `fit()` → `FitResult` (values, errors, summary, JSON) via iminuit |
-| `src/upsilon/plotting.py` | observable histograms, fit overlay, residuals/pulls, 2D vs mass; mplhep LHCb style, fit plots styled after Figs. 4-5 of arXiv:2312.01772 |
-| `scripts/measure_masses.py` | the core measurement: observables, 1S fit, three-peak fit, residuals/pulls |
-| `scripts/signal_shape.py` | all signal shapes in one comparison table (MC vs floating tails), MC-tail likelihood-ratio test, profile of μ(1S) |
-| `scripts/kinematics.py` | observables vs mass; TODO purity and (pt, η) bins |
-| `scripts/systematics.py` | refit with one choice changed; table of mass shifts |
-| `scripts/unbinned_diagnostics.py` | why the unbinned baseline fit on data ends invalid (flat width direction, FCN smoothness, HESSE/MIGRAD from the binned minimum) |
-| `output/figures/<dataset>`, `output/results/<dataset>` | generated plots (gitignored) and fit/result JSON (tracked), one subfolder per dataset (`small`, `full`, `mc`) |
+| `src/upsilon/io.py` | binary reader, the selection (`select_muons`, `MIN_MUON_PT`), rapidity, sideband subtraction, output paths |
+| `src/upsilon/models.py` | shapes normalised on the fit window (Gaussian, double Gaussian, Crystal Ball, double Crystal Ball; exponential and quadratic background), `MassModel` (Σ N_k·shape_k, parameter sharing, per-cell renaming), `build_model()` |
+| `src/upsilon/fitting.py` | `fit()` and simultaneous `fit_cells()` → `FitResult`, with convergence checks and restarts |
+| `src/upsilon/compare.py` | goodness of fit, likelihood ratio, AIC/BIC, correlations, likelihood scans |
+| `src/upsilon/masses.py` | MC shape bias, mass differences, momentum-scale calibration |
+| `src/upsilon/plotting.py` | observables, fit overlay, residuals/pulls, likelihood scans; mplhep LHCb style |
 
-Scripts take `--dataset small|full|mc` (default `small`); `measure_masses.py --binned` is much faster.
+| Script | Brief task / report section |
+|---|---|
+| `scripts/01_measure_masses.py` | tasks 1–4: observables, Gaussian 1S fit, errors by hand (−2 ln L scans), three-peak fit, residuals |
+| `scripts/02_signal_shape.py` | task 5: shapes fitted to MC and data, model comparison, MC-tail test, correlations |
+| `scripts/03_selection.py` | task 6: sideband purity, cut scan, mass stability in slices |
+| `scripts/04_kinematic_bins.py` | task 7: simultaneous fit in (pT, y) cells with common masses |
+| `scripts/05_momentum_scale.py` | data − MC peak position against p and softer-muon pT |
+| `scripts/06_final_masses.py` | task 8: masses ± stat ± fit model ± momentum scale; 1S-calibration cross-check |
+| `scripts/07_toys.py` | fit validation: pulls from pseudo-experiments |
+
+Scripts are numbered in the order of the brief's tasks. They take `--dataset small|full|mc` (default `small` for quick runs; use `full` for the report).
 
 ## Design notes for the discussion
 
@@ -63,7 +73,9 @@ Scripts take `--dataset small|full|mc` (default `small`); `measure_masses.py --b
   vs "tails fixed from MC" therefore uses the same code path, which keeps the comparisons fair.
 * **Systematics as variations.** Every analysis choice (signal model, background model, window,
   binning, momentum scale) is a refit with one change, and the parameter shift is the systematic.
-  Judge shifts against the statistical spread of the *difference* (Barlow). Pseudo-experiments
-  (generate from a fitted model, refit) can separate a real bias from noise.
+  A cut shares most events with the baseline, and removes mostly background, so neither fit's
+  error (nor Barlow's formula, which assumes a random subset) gives the error on the shift; the
+  mass is instead checked for stability in independent slices (`03_selection.py`). Pseudo-experiments
+  (`07_toys.py`) separate a fit bias from noise.
 * **Residuals/pulls** are the first diagnostic of model inadequacy: a structured pattern
   around the peaks (e.g. low-mass excess from FSR) motivates the Crystal Ball.

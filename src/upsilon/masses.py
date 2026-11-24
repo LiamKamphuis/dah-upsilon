@@ -18,7 +18,7 @@ import numpy as np
 import scipy.stats
 
 from .fitting import FitResult, fit
-from .models import PDG_MASS, build_model
+from .models import MC_MASS, PDG_MASS, build_model
 
 PEAKS = ("1S", "2S", "3S")
 
@@ -48,16 +48,16 @@ def mass_vector(result: FitResult, peaks: tuple[str, ...] = PEAKS) -> tuple[np.n
 
 
 def widths(result: FitResult, peaks: tuple[str, ...] = PEAKS) -> np.ndarray:
-    return np.array([result.values[f"sigma_{p}"] for p in peaks])
+    """Each peak's core width (scaled from sigma_1S when the widths are tied)."""
+    return np.array([result.model.sigma(p, result.values) for p in peaks])
 
 
-def shape_bias(signal: str, mc_mass: np.ndarray, m_true: float = PDG_MASS["1S"],
+def shape_bias(signal: str, mc_mass: np.ndarray, m_true: float = MC_MASS["1S"],
                window: tuple[float, float] = (9.0, 9.9)) -> Bias:
     """Fit simulation (pure Upsilon(1S)) with ``signal`` and return mu_fit - m_true.
 
-    ``m_true`` is the mass the simulation was *generated* with: the PDG value, taken
-    from the current PDG table (``PDG_MASS``). The generator used the PDG edition of
-    its time, which can differ from today's by ~0.1 MeV.
+    ``m_true`` is the mass the simulation was *generated* with: the PDG 2016 value
+    (``MC_MASS``), not today's ``PDG_MASS``, which is 0.1 MeV higher for the 1S.
     """
     model = build_model(("1S",), signal=signal, window=window, background=None)
     r = fit(model, mc_mass, progress=False)

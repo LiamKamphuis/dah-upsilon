@@ -3,6 +3,7 @@ data/*.bin
 
 # Generated outputs
 output/figures/*
+output/results/*
 !output/**/.gitkeep
 
 # Python

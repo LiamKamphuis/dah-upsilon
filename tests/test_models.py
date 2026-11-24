@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from upsilon.models import CrystalBall, DoubleCrystalBall, DoubleGaussian, Exponential, Gaussian, build_model
+from upsilon.models import CrystalBall, DoubleCrystalBall, DoubleGaussian, Exponential, Gaussian, Quadratic, build_model
 
 WINDOW = (9.0, 9.9)
 X = np.linspace(*WINDOW, 20001)
@@ -19,6 +19,7 @@ X = np.linspace(*WINDOW, 20001)
     (Exponential(WINDOW), (2.0,)),
     (Exponential(WINDOW), (0.0,)),
     (Exponential(WINDOW), (-1.0,)),
+    (Quadratic(WINDOW), (-0.4, 0.2)),
 ])
 def test_shape_normalised_and_cdf_consistent(shape, par):
     assert np.trapezoid(shape.pdf(X, *par), X) == pytest.approx(1.0, rel=1e-6)
@@ -71,3 +72,16 @@ def test_double_cb_shared_tails():
     model = build_model(signal="double_cb", share=share_tails("double_cb"))
     assert {"ratio_2S", "frac_3S", "alpha_2S"}.isdisjoint(model.names)
     assert len(model.names) == 3 * 3 + 4 + 2  # (N, mu, sigma) per peak + shared shape + background
+
+
+def test_tie_widths():
+    """sigma_k = sigma_1S * m_k / m_1S: one width parameter, scaled per peak."""
+    from upsilon.models import PDG_MASS, ScaledWidth, share_tails
+    model = build_model(signal="double_cb", share=share_tails("double_cb"), tie_widths=True)
+    assert {"sigma_2S", "sigma_3S"}.isdisjoint(model.names)
+    assert len(model.names) == 3 * 2 + 1 + 4 + 2  # (N, mu) per peak + sigma_1S + shared shape + background
+    values = dict.fromkeys(model.names, 1.0) | {"sigma_1S": 0.04}
+    assert model.sigma("3S", values) == pytest.approx(0.04 * PDG_MASS["3S"] / PDG_MASS["1S"])
+    base, scaled = Gaussian(WINDOW), ScaledWidth(Gaussian(WINDOW), 1.1)
+    assert scaled.pdf(X, 9.46, 0.04) == pytest.approx(base.pdf(X, 9.46, 0.044))
+    assert np.trapezoid(scaled.pdf(X, 9.46, 0.04), X) == pytest.approx(1.0, rel=1e-6)

@@ -62,3 +62,20 @@ def test_no_warning_on_good_fit(sample):
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         ups.fit(ups.build_model(("1S",), window=WINDOW), sample, progress=False)
+
+
+def test_fit_cells_shares_mass_and_separates_widths():
+    """Two cells with different resolution and one true mass: mu is shared, sigma is per cell."""
+    rng = np.random.default_rng(7)
+    model = ups.build_model(("1S",), window=WINDOW)
+    cells = {"a": 0.030, "b": 0.060}
+    models = [model.per_cell(c, common={"mu_1S"}) for c in cells]
+    assert "mu_1S" in models[0].names and {"sigma_1S_a", "N_bkg_a", "c_bkg_a"} <= set(models[0].names)
+    masses = [np.concatenate([rng.normal(9.46, s, 20000), WINDOW[0] + rng.exponential(1 / 1.5, 40000)])
+              for s in cells.values()]
+    results = ups.fit_cells(models, masses, start={"sigma_1S_a": 0.04, "sigma_1S_b": 0.04}, progress=False)
+    v, e = results[0].values, results[0].errors
+    assert results[0].valid and results[0].minuit is results[1].minuit
+    assert abs(v["mu_1S"] - 9.46) < 3 * e["mu_1S"]
+    for c, s in cells.items():
+        assert abs(v[f"sigma_1S_{c}"] - s) < 3 * e[f"sigma_1S_{c}"]

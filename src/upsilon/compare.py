@@ -145,6 +145,18 @@ def table(results: dict[str, FitResult], bins: int = 250) -> str:
     return "\n".join(lines)
 
 
+def strong_correlations(result: FitResult, threshold: float = 0.5) -> list[tuple[str, str, float]]:
+    """Pairs of free parameters with |correlation| >= ``threshold``, strongest first.
+
+    A correlation near +-1 means the data constrain only a combination of the two: the fit can
+    trade one for the other at almost no cost in -2 ln L, so each one's error is large.
+    """
+    free = [n for n, f in zip(result.minuit.parameters, result.minuit.fixed) if not f]
+    corr = result.minuit.covariance.correlation()
+    pairs = [(a, b, float(corr[a, b])) for i, a in enumerate(free) for b in free[i + 1:]]
+    return sorted((p for p in pairs if abs(p[2]) >= threshold), key=lambda p: -abs(p[2]))
+
+
 def profile_scan(result: FitResult, name: str, size: int = 31, bound: float = 3.0) -> tuple[np.ndarray, np.ndarray]:
     """Profile likelihood of parameter ``name``: Delta(-2 ln L) on a grid of ``size`` points
     within +-``bound`` HESSE errors, re-minimising all other parameters at each point.
@@ -156,3 +168,20 @@ def profile_scan(result: FitResult, name: str, size: int = 31, bound: float = 3.
     """
     x, y, _ = result.minuit.mnprofile(name, size=size, bound=bound, subtract_min=False)
     return x, y - result.nll
+
+
+def fixed_scan(result: FitResult, name: str, size: int = 101, bound: float = 3.0) -> tuple[np.ndarray, np.ndarray]:
+    """Delta(-2 ln L) along parameter ``name`` with every other parameter held *fixed* at its
+    best-fit value (no re-minimisation). Narrower than :func:`profile_scan` when ``name`` is
+    correlated with other parameters: it ignores what they could absorb."""
+    x, y = result.minuit.profile(name, size=size, bound=bound, subtract_min=False)
+    return x, y - result.nll
+
+
+def crossings(x: np.ndarray, delta: np.ndarray, level: float = 1.0) -> tuple[float, float]:
+    """Where a scan ``delta`` = Delta(-2 ln L) rises through ``level`` on either side of its
+    minimum, by linear interpolation. ``level = 1`` gives the 68% interval."""
+    i = int(np.argmin(delta))
+    lo = np.interp(level, delta[: i + 1][::-1], x[: i + 1][::-1])  # left branch, made increasing
+    hi = np.interp(level, delta[i:], x[i:])
+    return float(lo), float(hi)

@@ -28,7 +28,8 @@ def _experiment_label(ax, simulation: bool = False):
     hep.lhcb.label("Unofficial", ax=ax, loc=1, data=not simulation, rlabel="(13 TeV)" if simulation else "2015 (13 TeV)")
 
 
-def _save(fig, save):
+def save_figure(fig, save: str | None):
+    """Write ``fig`` to ``output/figures/<save>`` (e.g. ``"full/fit.png"``); no-op when ``save`` is None."""
     if save:
         path = FIGURE_DIR / save
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -44,7 +45,7 @@ def plot_variables(events: np.ndarray, bins: int = 200, ranges: dict | None = No
         ax.hist(events[col], bins=bins, range=ranges.get(col), histtype="step", color="k")
         ax.set(xlabel=LABELS[col], ylabel="Candidates / bin", title=f"Distribution of {LABELS[col]}")
     fig.tight_layout()
-    return _save(fig, save)
+    return save_figure(fig, save)
 
 
 def _binned(result: FitResult, bins: int):
@@ -100,7 +101,7 @@ def plot_fit(result: FitResult, bins: int = 250, pulls: bool = True, log: bool =
     else:
         ax.set_xlabel(MASS_LABEL)
     fig.tight_layout()
-    return _save(fig, save)
+    return save_figure(fig, save)
 
 
 def plot_residuals(result: FitResult, bins: int = 250, kind: str = "residual", ax=None, save: str | None = None):
@@ -118,7 +119,7 @@ def plot_residuals(result: FitResult, bins: int = 250, kind: str = "residual", a
     ax.errorbar(centres, y, yerr=yerr, fmt="k.", ms=4)
     ax.axhline(0, color="red")
     ax.set(xlabel=MASS_LABEL, ylabel=ylabel, title=f"{ylabel} per bin")
-    return _save(fig, save)
+    return save_figure(fig, save)
 
 
 def plot_profiles(results: dict[str, FitResult], name: str, ref: float = 0.0, scale: float = 1e3,
@@ -137,7 +138,35 @@ def plot_profiles(results: dict[str, FitResult], name: str, ref: float = 0.0, sc
     ax.set(xlabel=f"{name} $-$ {ref:g} [{unit}]" if ref else f"{name} [{unit}]",
            ylabel=r"$\Delta(-2\ln L)$", ylim=(0, 9), title=f"Profile likelihood of {name}")
     ax.legend()
-    return _save(fig, save)
+    return save_figure(fig, save)
+
+
+def plot_error_scans(result: FitResult, names: tuple[str, ...], scale: float = 1e3, unit: str = "MeV/$c^2$",
+                     save: str | None = None):
+    """Delta(-2 ln L) scans of each parameter in ``names`` (brief task 2: errors by hand).
+
+    Solid: profiled (others re-minimised, = MINOS); dashed: others fixed at the best fit.
+    The 68% interval is where a curve crosses Delta = 1; the x axis is the offset from
+    the best-fit value, times ``scale``.
+    """
+    from .compare import crossings, fixed_scan, profile_scan
+
+    fig, axes = plt.subplots(1, len(names), figsize=(10 * len(names), 9))
+    for ax, name in zip(np.atleast_1d(axes), names):
+        best = result.values[name]
+        for (x, d), style, label in ((profile_scan(result, name, size=41), "-", "profiled"),
+                                     (fixed_scan(result, name), "--", "others fixed")):
+            lo, hi = crossings(x, d)
+            ax.plot((x - best) * scale, d, style, color="C0" if style == "-" else "C1",
+                    label=rf"{label}: $^{{+{(hi - best) * scale:.3f}}}_{{-{(best - lo) * scale:.3f}}}$")
+        err = result.errors[name] * scale
+        ax.axvspan(-err, err, color="0.9", label=rf"HESSE $\pm{err:.3f}$")
+        ax.axhline(1.0, color="k", lw=1, ls=":")
+        ax.set(xlabel=rf"{name} $-$ best fit [{unit}]", ylabel=r"$\Delta(-2\ln L)$", ylim=(0, 4),
+               title=f"Likelihood scan of {name}")
+        ax.legend(fontsize=16)
+    fig.tight_layout()
+    return save_figure(fig, save)
 
 
 def plot_vs_mass(events: np.ndarray, column: str, bins=(250, 100), range_=None, save: str | None = None):
@@ -146,4 +175,4 @@ def plot_vs_mass(events: np.ndarray, column: str, bins=(250, 100), range_=None, 
     h = ax.hist2d(events["mass"], events[column], bins=bins, range=range_, cmap="viridis", norm="log")
     fig.colorbar(h[3], ax=ax, label="Candidates")
     ax.set(xlabel=MASS_LABEL, ylabel=LABELS[column], title=f"{LABELS[column]} vs dimuon mass")
-    return _save(fig, save)
+    return save_figure(fig, save)
