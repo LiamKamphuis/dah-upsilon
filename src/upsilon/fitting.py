@@ -14,7 +14,13 @@ from iminuit import Minuit
 from iminuit.cost import ExtendedBinnedNLL, ExtendedUnbinnedNLL
 from tqdm.auto import tqdm
 
-from .models import MassModel
+from .io import rapidity
+from .models import TAIL_PARAMS, MassModel
+
+# Kinematic cells (brief task 7): the reference analysis's fiducial region 2.0 < y < 4.5,
+# pT < 15 GeV/c, cut at round edges with at least ~2000 Upsilon(3S) in every cell.
+Y_EDGES = (2.0, 3.0, 3.5, 4.5)
+PT_EDGES = (0.0, 3.0, 6.0, 10.0, 15.0)
 
 
 @dataclass
@@ -114,6 +120,41 @@ def fit_cells(
     m = _minuit(total, {**starts, **{k: v for k, v in (start or {}).items() if k in starts}},
                 params, fix, False, progress)
     return [FitResult(model, m, x, True, edges) for model, x, edges, _ in cells]
+
+
+def fiducial(events: np.ndarray, y_edges=Y_EDGES, pt_edges=PT_EDGES) -> np.ndarray:
+    """Mask of events inside the outer edges of the kinematic cells."""
+    y = rapidity(events)
+    return (y > y_edges[0]) & (y < y_edges[-1]) & (events["pt"] < pt_edges[-1])
+
+
+def fit_kinematic_cells(model: MassModel, events: np.ndarray, signal: str, reference: dict[str, float], *,
+                        y_edges=Y_EDGES, pt_edges=PT_EDGES, bins: int = 250,
+                        progress: bool = False) -> tuple[list[dict], list[FitResult]]:
+    """One simultaneous fit of ``model`` in (y, pT) cells of the fiducial region.
+
+    The masses and the tail shape (of ``signal``) are common to all cells; each cell has its
+    own yields, sigma_1S and background. Shape and background start from ``reference``, the
+    values of a fit to all cells together (from the default start the double CB can collapse
+    into a false minimum); yields start from each cell's event count. Returns the cells
+    (name, y and pT range, event count) and one :class:`FitResult` per cell.
+    """
+    y, pt = rapidity(events), events["pt"]
+    keep = fiducial(events, y_edges, pt_edges)
+    peaks = [k for k in model.components if k != "bkg"]
+    common = {f"mu_{p}" for p in peaks} | {f"{t}_{peaks[0]}" for t in TAIL_PARAMS[signal]}
+    cells, models, masses, start = [], [], [], {}
+    for i, (ylo, yhi) in enumerate(zip(y_edges[:-1], y_edges[1:])):
+        for j, (plo, phi) in enumerate(zip(pt_edges[:-1], pt_edges[1:])):
+            name = f"y{i}pt{j}"
+            sel = keep & (y >= ylo) & (y < yhi) & (pt >= plo) & (pt < phi)
+            cells.append({"cell": name, "y": (ylo, yhi), "pt": (plo, phi), "events": int(sel.sum())})
+            models.append(model.per_cell(name, common))
+            masses.append(events["mass"][sel])
+            for n, v in reference.items():
+                if not n.startswith("N_"):
+                    start[n if n in common else f"{n}_{name}"] = v
+    return cells, fit_cells(models, masses, bins=bins, start=start, progress=progress)
 
 
 def _in_window(model: MassModel, mass: np.ndarray) -> np.ndarray:

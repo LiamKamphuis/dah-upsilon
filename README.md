@@ -50,12 +50,12 @@ writes its figures to `output/figures/<dataset>/` and its numbers to `output/res
 
 | Script | Brief task / report section |
 |---|---|
-| `scripts/01_measure_masses.py` | tasks 1–4: observables, Gaussian 1S fit, errors by hand (−2 ln L scans), three-peak fit, residuals |
+| `scripts/01_measure_masses.py` | tasks 1–4: observables, Gaussian 1S fit, errors by hand (−2 ln L scans), bin-width scan, three-peak fit, residuals |
 | `scripts/02_signal_shape.py` | task 5: shapes fitted to MC and data, model comparison, MC-tail test, correlations |
 | `scripts/03_selection.py` | task 6: sideband purity, cut scan, mass stability in slices |
 | `scripts/04_kinematic_bins.py` | task 7: simultaneous fit in (pT, y) cells with common masses |
 | `scripts/05_momentum_scale.py` | data − MC peak position against p and softer-muon pT |
-| `scripts/06_final_masses.py` | task 8: masses ± stat ± fit model ± momentum scale; 1S-calibration cross-check |
+| `scripts/06_final_masses.py` | task 8: masses ± stat ± fit model ± momentum scale from the kinematic-cell fit (bias-corrected, fiducial region); 1S-calibration cross-check |
 | `scripts/07_toys.py` | fit validation: pulls from pseudo-experiments |
 
 Scripts are numbered in the order of the brief's tasks. They take `--dataset small|full|mc` (default `small` for quick runs; use `full` for the report).

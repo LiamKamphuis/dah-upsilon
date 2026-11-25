@@ -52,6 +52,23 @@ def widths(result: FitResult, peaks: tuple[str, ...] = PEAKS) -> np.ndarray:
     return np.array([result.model.sigma(p, result.values) for p in peaks])
 
 
+def effective_widths(results: list[FitResult], peaks: tuple[str, ...] = PEAKS) -> np.ndarray:
+    """Each peak's width as seen by a simultaneous fit in cells: sum_c w_c sigma_c / sum_c w_c.
+
+    A shared mass is a weighted mean of what each cell measures, with weight w_c = N_c / sigma_c^2
+    (the information on a peak position from N_c signal events of width sigma_c; background
+    ignored). A bias proportional to the width (see ``apply_bias``) averages the same way, so
+    this width in ``apply_bias`` gives the bias of the shared mass.
+    """
+    out = []
+    for p in peaks:
+        n = np.array([r.values[next(k for k in r.model.names if k.startswith(f"N_{p}"))] for r in results])
+        s = np.array([r.model.sigma(p, r.values) for r in results])
+        w = n / s**2
+        out.append(np.sum(w * s) / np.sum(w))
+    return np.array(out)
+
+
 def shape_bias(signal: str, mc_mass: np.ndarray, m_true: float = MC_MASS["1S"],
                window: tuple[float, float] = (9.0, 9.9)) -> Bias:
     """Fit simulation (pure Upsilon(1S)) with ``signal`` and return mu_fit - m_true.

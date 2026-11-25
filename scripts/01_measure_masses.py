@@ -52,8 +52,25 @@ for name in SCAN:
           f"{1e3 * (prof[0] - best):>10.4f}/{1e3 * (prof[1] - best):+.4f}"
           f"{1e3 * (fixed[0] - best):>9.4f}/{1e3 * (fixed[1] - best):+.4f}{1e3 * by_hand[name]:>13.4f}")
 
+# Bin width: a binned fit loses information once the bins are no longer small against the peak
+# width. Refit the 1S with bin widths from 2 to 64 MeV and compare mass and error with the unbinned fit
+# (the three-peak fits use 250 bins over 2 GeV = 8 MeV).
+unbinned = fit_1s if not args.binned else ups.fit(fit_1s.model, events["mass"], start=fit_1s.values, progress=False)
+mu0, err0, sigma0 = (unbinned.values["mu_1S"], unbinned.errors["mu_1S"], unbinned.values["sigma_1S"])
+print(f"\nBin width scan (1S, sigma = {1e3 * sigma0:.1f} MeV/c^2; unbinned error {1e3 * err0:.4f} MeV/c^2)")
+print(f"{'bins':>6}{'width [MeV]':>13}{'sigma/width':>13}{'mu - unbinned [MeV]':>21}{'error / unbinned':>18}")
+bin_scan = []
+for n in (450, 225, 112, 56, 28, 14):
+    r = ups.fit(fit_1s.model, events["mass"], binned=True, bins=n, start=fit_1s.values, progress=False)
+    width = np.ptp(fit_1s.model.window) / n
+    bin_scan.append({"bins": n, "width": width, "sigma_over_width": sigma0 / width, "mu_shift": r.values["mu_1S"] - mu0,
+                     "error_ratio": r.errors["mu_1S"] / err0})
+    print(f"{n:>6}{1e3 * width:>13.1f}{sigma0 / width:>13.1f}{1e3 * (r.values['mu_1S'] - mu0):>+21.4f}"
+          f"{r.errors['mu_1S'] / err0:>18.4f}")
+ups.save_json({"sigma_1S": sigma0, "error_unbinned": err0, "scan": bin_scan}, f"bin_width_scan_{args.signal}.json", args.dataset)
+
 # All three peaks
-# One set of tail parameters for all peaks: per-peak tails are not identifiable on the full data
+# One set of tail parameters for all peaks: per-peak tails are not identifiable on the full data (previous inspection)
 fit_3 = ups.fit(ups.build_model(signal=args.signal, share=share_tails(args.signal)),
                 events["mass"], binned=args.binned)
 print("\nThree-peak fit\n" + fit_3.summary())

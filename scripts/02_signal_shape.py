@@ -24,8 +24,9 @@ mass = ups.select_muons(ups.load(args.dataset))["mass"]
 fits = {"gauss": ups.fit(ups.build_model(), mass, binned=args.binned)}
 mc_fits = {}
 
+# Fit MC first to pin tail parameters, then use fixed tails on dataset.
 for signal in SHAPES if args.signal == "all" else [args.signal]:
-    # Simulation is pure signal: a background term would absorb the radiative tail
+    # background=None as simulation is pure signal, unbinned as MC dataset is small
     mc_fit = ups.fit(ups.build_model(("1S",), signal=signal, window=(9.0, 9.9), background=None), mc)
     mc_fits[signal] = mc_fit
     print(f"\n{signal}: simulation\n" + mc_fit.summary())
@@ -42,8 +43,8 @@ for signal in SHAPES if args.signal == "all" else [args.signal]:
 
 print("\nModel comparison\n" + ups.compare.table(fits))
 
-# Nested test with the simple model inside the parameter space (tails at the MC values),
-# so Wilks holds: are the data's tails compatible with simulation's?
+# Nested test with the simple model inside the parameter space (tails at the MC values) so Wilks holds
+# Essentially this tests whether the data's tails are compatible with the simulation's
 tails_test = {}
 print("\nAre data tails compatible with MC tails? (likelihood ratio, chi2 with Delta k = tail parameters)")
 for signal in SHAPES if args.signal == "all" else [args.signal]:
@@ -52,8 +53,11 @@ for signal in SHAPES if args.signal == "all" else [args.signal]:
     print(f"  {signal:<14} -2 Delta lnL = {lr.stat:8.1f}  (Delta k = {lr.ndof})  p = {lr.pvalue:.3g}")
 
 # Does the shape choice move the mass by more than its statistical error?
-profiled = {name: r for name, r in fits.items() if name == "gauss" or name.endswith("(shared tails)")}
-ups.plotting.plot_profiles(profiled, "mu_1S", ref=PDG_MASS["1S"], save=f"{output_subdir(args.dataset)}/profile_mu_1S.png")
+NICE = {"gauss": "Gaussian", "double_gauss": "Double Gaussian", "crystal_ball": "Crystal Ball", "double_cb": "Double CB"}
+profiled = {NICE[name.split()[0]]: r for name, r in fits.items() if name == "gauss" or name.endswith("(shared tails)")}
+ups.plotting.plot_profiles(profiled, "mu_1S", ref=PDG_MASS["1S"], xlabel=r"$\mu_{1S} - m_\mathrm{PDG}$ [MeV/$c^2$]",
+                           save=f"{output_subdir(args.dataset)}/profile_mu_1S.png")
 
-ups.save_json({"mc": {k: r.to_dict() for k, r in mc_fits.items()}, "data": {k: r.to_dict() for k, r in fits.items()},
-               "tails_test": tails_test}, "signal_shape.json", args.dataset)
+ups.save_json({"mc": {k: r.to_dict() for k, r in mc_fits.items()},
+                   "data": {k: r.to_dict() for k, r in fits.items()},
+                   "tails_test": tails_test}, "signal_shape.json", args.dataset)

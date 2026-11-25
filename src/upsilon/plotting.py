@@ -58,10 +58,12 @@ def _binned(result: FitResult, bins: int):
 
 
 def plot_fit(result: FitResult, bins: int = 250, pulls: bool = True, log: bool = False,
-             title: str | None = None, simulation: bool = False, save: str | None = None):
+             title: str | None = "Mass fit", legend_title: str | None = None, simulation: bool = False,
+             save: str | None = None):
     """Data with fitted model and its components; optional pull panel below.
 
     ``simulation=True`` labels the plot as LHCb simulation (fits to the MC sample).
+    ``legend_title`` heads the legend, e.g. the kinematic cell of a fit in bins.
     """
     edges, counts, comps, expected = _binned(result, bins)
     centres = 0.5 * (edges[1:] + edges[:-1])
@@ -86,13 +88,13 @@ def plot_fit(result: FitResult, bins: int = 250, pulls: bool = True, log: bool =
     if "bkg" in comps:
         handles.append(bkg)
         labels.append("Background")
-    ax.set(ylabel=f"Candidates / ({1e3 * (edges[1] - edges[0]):.0f} MeV/$c^2$)", title=title or "Mass fit")
+    ax.set(ylabel=f"Candidates / ({1e3 * (edges[1] - edges[0]):.0f} MeV/$c^2$)", title=title or "")
     if log:
         ax.set_yscale("log")
     else:
         ax.set_ylim(0, 1.4 * counts.max())  # headroom for the label and legend, as in Fig. 5
     compact = {"fontsize": 0.75 * plt.rcParams["legend.fontsize"], "handlelength": 1.2, "labelspacing": 0.3} if len(peaks) == 1 else {}
-    ax.legend(handles, labels, loc="upper right", **compact)
+    ax.legend(handles, labels, loc="upper right", title=legend_title, **compact)
     _experiment_label(ax, simulation)
 
     if pulls:
@@ -123,21 +125,23 @@ def plot_residuals(result: FitResult, bins: int = 250, kind: str = "residual", a
 
 
 def plot_profiles(results: dict[str, FitResult], name: str, ref: float = 0.0, scale: float = 1e3,
-                  unit: str = "MeV/$c^2$", size: int = 31, save: str | None = None):
+                  unit: str = "MeV/$c^2$", size: int = 31, xlabel: str | None = None, save: str | None = None):
     """Overlay profile likelihoods of parameter ``name`` from several fits.
 
     The x axis is ``(value - ref) * scale``, e.g. ``ref=PDG_MASS["1S"]`` for the mass offset in MeV.
     """
     from .compare import profile_scan
 
-    fig, ax = plt.subplots(figsize=(7, 4.5))
+    fig, ax = plt.subplots(figsize=(16, 9))
     for label, r in results.items():
         x, d = profile_scan(r, name, size=size)
-        ax.plot((x - ref) * scale, d, label=label)
-    ax.axhline(1.0, color="0.5", ls=":", lw=1)
-    ax.set(xlabel=f"{name} $-$ {ref:g} [{unit}]" if ref else f"{name} [{unit}]",
-           ylabel=r"$\Delta(-2\ln L)$", ylim=(0, 9), title=f"Profile likelihood of {name}")
-    ax.legend()
+        ax.plot((x - ref) * scale, d, lw=2, label=label)
+    ax.axhline(1.0, color="0.5", ls=":", lw=1.5)
+    ax.margins(x=0.03)
+    ax.set(xlabel=xlabel or (f"{name} $-$ {ref:g} [{unit}]" if ref else f"{name} [{unit}]"),
+           ylabel=r"$\Delta(-2\ln L)$", ylim=(0, 9))
+    ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1.0), fontsize=18)  # outside: curves span the width
+    fig.tight_layout()
     return save_figure(fig, save)
 
 

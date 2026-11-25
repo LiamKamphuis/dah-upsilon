@@ -1,7 +1,7 @@
 """Brief task 6: choose a selection that improves the signal purity.
 
 1. 2D plots of each observable against mass.
-2. Fit-free sideband estimate: which variable separates signal from background at all?
+2. Fit-free sideband estimate: which variable separates signal from background at all
 3. Cut scan on that variable, one three-peak fit per cut: purity, S/sqrt(S+B) and, what the
    measurement needs, the statistical error on each mass.
 4. Does the cut move the mass? Fits in independent slices of the cut variable.
@@ -47,6 +47,7 @@ for label, rows in sideband.items():
     ax.plot([r["eff"] for r in rows], [r["purity"] for r in rows], "o-", label=label)
 ax.set(xlabel=r"$\Upsilon(1S)$ signal kept by the cut", ylabel=r"Purity $S/(S+B)$ in 9.36-9.56 GeV",
        title="Sideband estimate: purity against signal kept")
+ax.margins(0.05)  # the LHCb style sets zero margins, which puts end points on the frame
 ax.legend()
 ups.plotting.save_figure(fig, f"{output_subdir(args.dataset)}/sideband_purity.png")
 
@@ -54,13 +55,13 @@ ups.plotting.save_figure(fig, f"{output_subdir(args.dataset)}/sideband_purity.pn
 # muon paired with anything; dimuon pT and eta barely separate signal from background).
 # Each cut gets one three-peak baseline fit, which gives both figures of merit:
 #   - S, B in mu +- 2 sigma per peak -> purity S/(S+B) and S/sqrt(S+B)
-#   - the HESSE error on each mass, which is what the measurement actually needs.
-CUTS = np.round(np.arange(1.0, 4.01, 0.25), 2)  # GeV; 1.0 = no cut (the data start there)
+#   - the HESSE error on each mass, most impactful on a mass measurement.
+CUTS = np.round(np.arange(1.0, 4.01, 0.25), 2)  # GeV; 1.0 = no cut
 PEAKS = ("1S", "2S", "3S")
 model = ups.build_model(signal=BASELINE_SIGNAL, share=share_tails(BASELINE_SIGNAL), tie_widths=True)
 # Every cut and slice starts from the no-cut fit: from the default start, MIGRAD sometimes
 # lands in a false minimum where the double CB collapses to one CB (ratio -> 1), with
-# -2 ln L worse by ~650 but a minimum Minuit still calls valid (e.g. cut at 3.75 GeV).
+# -2 ln L worse by ~650 but a minimum Minuit still calls valid.
 reference = ups.fit(model, events["mass"], binned=True, progress=False).values
 
 scan = []

@@ -87,7 +87,11 @@ for col, (name, label) in enumerate(VARIABLES.items()):
     top.errorbar(x, 1e4 * np.array([r["alpha_mc"] for r in rows]), 1e4 * np.array([r["err_mc"] for r in rows]),
                  fmt="s", color="C1", label="Simulation")
     bottom.errorbar(x, 1e4 * y, 1e4 * err, fmt="ko")
-    grid = np.linspace(x.min(), x.max(), 100)
+    # Pad the x range (the LHCb style sets zero margins, which puts end points on the frame)
+    xlim = (x.min() / 1.15, x.max() * 1.15) if name == "p" else (x.min() - 0.08 * np.ptp(x), x.max() + 0.08 * np.ptp(x))
+    grid = (np.geomspace if name == "p" else np.linspace)(*xlim, 100)
+    bottom.set_xlim(xlim)
+    top.margins(y=0.08)
     fit_line = coef[0] + (coef[1] * (grid - 100.0) if name == "p" else 0.0 * grid)
     bottom.plot(grid, 1e4 * fit_line, "C0", label=rf"{model_name}: $\chi^2$/ndof = {chi2:.0f}/{ndof}")
     bottom.fill_between(grid, 1e4 * (fit_line - PAPER_ALPHA_ERR), 1e4 * (fit_line + PAPER_ALPHA_ERR),
