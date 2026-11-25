@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from upsilon.models import CrystalBall, DoubleCrystalBall, DoubleGaussian, Exponential, Gaussian, Quadratic, build_model
+from upsilon.models import CrystalBall, DoubleCrystalBall, DoubleGaussian, Exponential, Gaussian, build_model
 
 WINDOW = (9.0, 9.9)
 X = np.linspace(*WINDOW, 20001)
@@ -19,7 +19,6 @@ X = np.linspace(*WINDOW, 20001)
     (Exponential(WINDOW), (2.0,)),
     (Exponential(WINDOW), (0.0,)),
     (Exponential(WINDOW), (-1.0,)),
-    (Quadratic(WINDOW), (-0.4, 0.2)),
 ])
 def test_shape_normalised_and_cdf_consistent(shape, par):
     assert np.trapezoid(shape.pdf(X, *par), X) == pytest.approx(1.0, rel=1e-6)

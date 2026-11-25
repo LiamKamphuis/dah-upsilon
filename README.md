@@ -42,7 +42,7 @@ writes its figures to `output/figures/<dataset>/` and its numbers to `output/res
 | Path | Contents |
 |---|---|
 | `src/upsilon/io.py` | binary reader, the selection (`select_muons`, `MIN_MUON_PT`), rapidity, sideband subtraction, output paths |
-| `src/upsilon/models.py` | shapes normalised on the fit window (Gaussian, double Gaussian, Crystal Ball, double Crystal Ball; exponential and quadratic background), `MassModel` (Σ N_k·shape_k, parameter sharing, per-cell renaming), `build_model()` |
+| `src/upsilon/models.py` | shapes normalised on the fit window (Gaussian, double Gaussian, Crystal Ball, double Crystal Ball; exponential background), `MassModel` (Σ N_k·shape_k, parameter sharing, per-cell renaming), `build_model()` |
 | `src/upsilon/fitting.py` | `fit()` and simultaneous `fit_cells()` → `FitResult`, with convergence checks and restarts |
 | `src/upsilon/compare.py` | goodness of fit, likelihood ratio, AIC/BIC, correlations, likelihood scans |
 | `src/upsilon/masses.py` | MC shape bias, mass differences, momentum-scale calibration |
@@ -71,8 +71,8 @@ Scripts are numbered in the order of the brief's tasks. They take `--dataset sma
 * **Model choice = configuration.** Signal/background shapes are chosen by name and parameters
   can be shared across peaks (`share=`). Comparing "independent widths" vs "common tail parameters"
   vs "tails fixed from MC" therefore uses the same code path, which keeps the comparisons fair.
-* **Systematics as variations.** Every analysis choice (signal model, background model, window,
-  binning, momentum scale) is a refit with one change, and the parameter shift is the systematic.
+* **Systematics as variations.** Each analysis choice kept as a systematic (signal model, soft-muon
+  cut, kinematic cells) is a refit with one change, and the parameter shift is the systematic.
   A cut shares most events with the baseline, and removes mostly background, so neither fit's
   error (nor Barlow's formula, which assumes a random subset) gives the error on the shift; the
   mass is instead checked for stability in independent slices (`03_selection.py`). Pseudo-experiments

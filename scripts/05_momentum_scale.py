@@ -6,7 +6,12 @@ alpha_eff = mu / m_PDG - 1 per bin. The radiative-tail shape bias also moves mu,
 that depends on the resolution and so on the kinematics, so simulation (perfect momentum scale)
 is fitted in the same bins: alpha_data - alpha_MC is the detector effect, up to one constant.
 
-- p: the paper's dominant dependence. A straight line alpha(p) gives the slope.
+This is a systematic check, not a model of alpha: per variable, data - MC is fitted with a
+constant, and its chi2 and spread (max - min over the bins) are compared with the 3e-4 the paper
+assigns for the variation of alpha across decay modes and kinematics (its Sec. 6).
+
+- p: the paper shows alpha against momentum (its Fig. 5). Curvature (alignment) biases are
+  charge dependent and mostly cancel in a dimuon mass, so no functional form in p is assumed.
 - softer-muon pT: the selection variable. If data - MC is flat here, the mass drift across
   pT slices in 03_selection.py is a shape/resolution effect, present in simulation too, not a
   calibration problem.
@@ -70,16 +75,15 @@ for col, (name, label) in enumerate(VARIABLES.items()):
                      "alpha_mc": am, "err_mc": em, "diff": ad - am, "diff_err": float(np.hypot(ed, em))})
     x, y, err = (np.array([r[k] for r in rows]) for k in ("centre", "diff", "diff_err"))
 
-    # Weighted least squares: constant, and (for p) a straight line alpha0 + k (p - 100 GeV)
-    X = np.column_stack([np.ones_like(x), x - 100.0]) if name == "p" else np.ones((len(x), 1))
-    coef, *_ = np.linalg.lstsq(X / err[:, None], y / err, rcond=None)
-    cov = np.linalg.inv((X / err[:, None]).T @ (X / err[:, None]))
-    chi2 = float(np.sum(((y - X @ coef) / err) ** 2))
-    ndof = len(y) - X.shape[1]
-    results[name] = {"bins": rows, "coef": coef.tolist(), "coef_err": np.sqrt(np.diag(cov)).tolist(), "chi2": chi2, "ndof": ndof}
-    model_name = "alpha0 + k (p - 100)" if name == "p" else "constant"
-    print(f"{name}: data - MC = {model_name}: " + ", ".join(f"{v:.3g} +- {e:.2g}" for v, e in
-          zip(coef, results[name]["coef_err"])) + f"; chi2/ndof = {chi2:.1f}/{ndof} (p = {stats.chi2.sf(chi2, ndof):.2g})")
+    # Weighted mean (constant fit); the spread across bins is what is compared with the 3e-4
+    w = err ** -2.0
+    const, const_err = float(np.sum(w * y) / np.sum(w)), float(np.sum(w) ** -0.5)
+    chi2, ndof, spread = float(np.sum(((y - const) / err) ** 2)), len(y) - 1, float(np.ptp(y))
+    results[name] = {"bins": rows, "constant": const, "constant_err": const_err, "chi2": chi2, "ndof": ndof,
+                     "spread": spread}
+    print(f"{name}: data - MC = constant {1e4 * const:.2f} +- {1e4 * const_err:.2f} [1e-4]; "
+          f"chi2/ndof = {chi2:.1f}/{ndof} (p = {stats.chi2.sf(chi2, ndof):.2g}); "
+          f"spread (max - min) = {1e4 * spread:.2f}e-4 vs {1e4 * PAPER_ALPHA_ERR:.0f}e-4")
 
     top, bottom = axes[0, col], axes[1, col]
     top.errorbar(x, 1e4 * np.array([r["alpha_data"] for r in rows]), 1e4 * np.array([r["err_data"] for r in rows]),
@@ -91,9 +95,10 @@ for col, (name, label) in enumerate(VARIABLES.items()):
     xlim = (x.min() / 1.15, x.max() * 1.15) if name == "p" else (x.min() - 0.08 * np.ptp(x), x.max() + 0.08 * np.ptp(x))
     grid = (np.geomspace if name == "p" else np.linspace)(*xlim, 100)
     bottom.set_xlim(xlim)
+    bottom.set_ylim(1e4 * (const - 1.6 * PAPER_ALPHA_ERR), 1e4 * (const + 1.6 * PAPER_ALPHA_ERR))  # band edges visible
     top.margins(y=0.08)
-    fit_line = coef[0] + (coef[1] * (grid - 100.0) if name == "p" else 0.0 * grid)
-    bottom.plot(grid, 1e4 * fit_line, "C0", label=rf"{model_name}: $\chi^2$/ndof = {chi2:.0f}/{ndof}")
+    fit_line = np.full_like(grid, const)
+    bottom.plot(grid, 1e4 * fit_line, "C0", label=rf"constant: $\chi^2$/ndof = {chi2:.0f}/{ndof}")
     bottom.fill_between(grid, 1e4 * (fit_line - PAPER_ALPHA_ERR), 1e4 * (fit_line + PAPER_ALPHA_ERR),
                         color="C0", alpha=0.15, label=r"$\pm3\times10^{-4}$ (LHCb calibration)")
     bottom.set_xlabel(label)

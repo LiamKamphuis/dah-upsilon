@@ -9,8 +9,8 @@
    generated mass), scaled to each peak by the width the cell fit effectively sees
    (masses.effective_widths) and subtracted; its MC error goes into stat.
 3. Fit-model systematic: refit with one analysis choice changed at a time and take the shift of
-   the bias-corrected masses: fit window, bin width, signal shape (Crystal Ball in the cells),
-   background shape, the softer-muon cut, and no kinematic cells (one inclusive fit). A change of
+   the bias-corrected masses: signal shape (Crystal Ball in the cells), the softer-muon cut, and
+   no kinematic cells (one inclusive fit). A change of
    signal shape or selection also changes the MC bias, so each variation is corrected with its
    own. Shifts are added in quadrature.
 4. Momentum scale: 3e-4 relative (arXiv:2312.01772), the same for every peak.
@@ -43,8 +43,8 @@ def selected(sample, cut=ups.io.MIN_MUON_PT):
     return sample[fiducial(sample)]
 
 
-def model(signal=BASELINE_SIGNAL, **kw):
-    return ups.build_model(signal=signal, share=share_tails(signal), tie_widths=True, **kw)
+def model(signal=BASELINE_SIGNAL):
+    return ups.build_model(signal=signal, share=share_tails(signal), tie_widths=True)
 
 
 @cache
@@ -55,20 +55,20 @@ def bias(signal, cut):
 reference = {}  # shape values of the baseline inclusive fit: the start for every later fit
 
 
-def measure(signal=BASELINE_SIGNAL, cut=ups.io.MIN_MUON_PT, bins=250, cells=True, **kw):
+def measure(signal=BASELINE_SIGNAL, cut=ups.io.MIN_MUON_PT, cells=True):
     """Bias-corrected masses and covariance (fit + MC statistics), and whether the fit converged.
 
     First one inclusive fit to all selected events (started from the baseline's shape: from the
     default start the double CB can collapse into a false minimum); with ``cells``, that fit
     then starts the simultaneous fit in the kinematic cells.
     """
-    sample, m = selected(events, cut), model(signal, **kw)
-    inclusive = ups.fit(m, sample["mass"], binned=True, bins=bins, progress=False,
+    sample, m = selected(events, cut), model(signal)
+    inclusive = ups.fit(m, sample["mass"], binned=True, progress=False,
                         start={k: v for k, v in reference.items() if k in m.names})
     if not cells:
         mu, cov = masses.mass_vector(inclusive)
         return (*masses.apply_bias(mu, cov, bias(signal, cut), masses.widths(inclusive)), inclusive.valid, inclusive)
-    _, results = fit_kinematic_cells(m, sample, signal, inclusive.values, bins=bins)
+    _, results = fit_kinematic_cells(m, sample, signal, inclusive.values)
     mu, cov = masses.mass_vector(results[0])
     sigma = masses.effective_widths(results)
     return (*masses.apply_bias(mu, cov, bias(signal, cut), sigma), results[0].minuit.valid, inclusive)
@@ -81,10 +81,7 @@ print(f"baseline (kinematic cells) valid={valid}; MC shape bias {MEV * b.value:+
       f"at sigma_MC = {MEV * b.sigma:.1f} MeV")
 
 variations = {
-    "fit window 9.1-10.9": lambda: measure(window=(9.1, 10.9)),
-    "bin width x2": lambda: measure(bins=125),
     "Crystal Ball signal": lambda: measure("crystal_ball"),
-    "quadratic background": lambda: measure(background="poly2"),
     "muon pT cut 2.5 GeV": lambda: measure(cut=2.5),
     "muon pT cut 3.5 GeV": lambda: measure(cut=3.5),
     "no kinematic cells": lambda: measure(cells=False),

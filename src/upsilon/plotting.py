@@ -173,10 +173,16 @@ def plot_error_scans(result: FitResult, names: tuple[str, ...], scale: float = 1
     return save_figure(fig, save)
 
 
-def plot_vs_mass(events: np.ndarray, column: str, bins=(250, 100), range_=None, save: str | None = None):
-    """2D histogram of ``column`` against dimuon mass (task 6)."""
-    fig, ax = plt.subplots(figsize=(8, 6))
-    h = ax.hist2d(events["mass"], events[column], bins=bins, range=range_, cmap="viridis", norm="log")
-    fig.colorbar(h[3], ax=ax, label="Candidates")
-    ax.set(xlabel=MASS_LABEL, ylabel=LABELS[column], title=f"{LABELS[column]} vs dimuon mass")
+def plot_vs_mass(events: np.ndarray, columns: tuple[str, ...], ranges: dict | None = None, bins=(250, 100),
+                 save: str | None = None):
+    """2D histograms of each column against dimuon mass, 2 x 2 (task 6). ``ranges`` maps column -> (lo, hi)."""
+    ranges = ranges or {}
+    fig, axes = plt.subplots(2, 2, figsize=(20, 15))
+    mass_range = (events["mass"].min(), events["mass"].max())
+    for ax, col in zip(axes.flat, columns):
+        y_range = ranges.get(col, (events[col].min(), events[col].max()))
+        h = ax.hist2d(events["mass"], events[col], bins=bins, range=(mass_range, y_range), cmap="viridis", norm="log")
+        fig.colorbar(h[3], ax=ax, label="Candidates / bin")
+        ax.set(xlabel=MASS_LABEL, ylabel=LABELS[col])
+    fig.tight_layout()
     return save_figure(fig, save)

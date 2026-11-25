@@ -217,30 +217,6 @@ class Exponential(Shape):
         return np.expm1(-c * self._x(x)) / np.expm1(-c * width)
 
 
-class Quadratic(Shape):
-    """Second-order polynomial ``1 + a1 P1(t) + a2 P2(t)`` in Legendre polynomials of
-    t = 2 (x - lo) / (hi - lo) - 1, normalized on the window.
-
-    The alternative background for the systematic: it can curve where the exponential
-    cannot. P1 and P2 integrate to zero on [-1, 1], so the normalization does not depend
-    on a1, a2 (but the density goes negative if they are too large: check the fit).
-    """
-
-    PARAMS = (Param("a1", -0.3, (-1.0, 1.0)), Param("a2", 0.0, (-1.0, 1.0)))
-
-    def _t(self, x):
-        lo, hi = self.window
-        return 2 * (np.asarray(x, dtype=float) - lo) / (hi - lo) - 1
-
-    def pdf(self, x, a1, a2):
-        t = self._t(x)
-        return (1 + a1 * t + a2 * 0.5 * (3 * t**2 - 1)) / (self.window[1] - self.window[0])
-
-    def cdf(self, x, a1, a2):
-        t = self._t(x)
-        return 0.5 * ((t + 1) + a1 * 0.5 * (t**2 - 1) + a2 * 0.5 * (t**3 - t))
-
-
 class ScaledWidth(Shape):
     """``shape`` with its ``sigma`` multiplied by a fixed ``factor``.
 
@@ -277,7 +253,7 @@ TAIL_PARAMS: dict[str, tuple[str, ...]] = {
     "gauss": (), "double_gauss": ("ratio", "frac"), "crystal_ball": ("alpha", "n"),
     "double_cb": ("alpha", "n", "ratio", "frac"),
 }
-BACKGROUNDS: dict[str, type[Shape]] = {"exp": Exponential, "poly2": Quadratic}
+BACKGROUNDS: dict[str, type[Shape]] = {"exp": Exponential}
 
 
 # --- composite model -----------------------------------------------------------

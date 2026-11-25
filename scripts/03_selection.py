@@ -22,8 +22,11 @@ args = parser.parse_args()
 
 events = ups.load(args.dataset)
 # Step 1: each observable against mass
-for col in ("pt", "eta", "p", "pt1", "pt2"):
-    ups.plotting.plot_vs_mass(events, col, save=f"{output_subdir(args.dataset)}/{col}_vs_mass.png")
+# pt1 is muon 1 of the pair, not the softer one (pt1 > pt2 in about half of the events);
+# ranges as in the variables plot of 01_measure_masses.py
+ups.plotting.plot_vs_mass(events, ("eta", "p", "pt", "pt1"),
+                          ranges={"eta": (1.5, 5.5), "p": (0, 500), "pt": (0, 30), "pt1": (0, 20)},
+                          save=f"{output_subdir(args.dataset)}/variables_vs_mass.png")
 
 # Step 2, fit-free. Count events in the 1S window and sidebands either side; for a background
 # linear in mass, the sidebands (0.4 GeV in total) predict the background under the 0.2 GeV window.
@@ -32,7 +35,7 @@ mass = events["mass"]
 pt_min = np.minimum(events["pt1"], events["pt2"])
 S0, _ = ups.sideband_subtract(mass, WINDOW, SIDEBANDS)
 sideband = {}
-for label, var, cuts in [("min muon pT", pt_min, (1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0)),
+for label, var, cuts in [("soft muon pT", pt_min, (1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0)),
                          ("dimuon pT", events["pt"], (0, 1, 2, 3, 5, 8)),
                          ("dimuon eta", events["eta"], (0, 2.5, 3.0, 3.5))]:
     sideband[label] = []
@@ -106,30 +109,25 @@ for p in PEAKS:
 ups.save_json({"sideband": sideband, "cuts": scan, "slices": slices, "flatness": flatness},
               "selection.json", args.dataset)
 
+# One figure per figure of merit, for side-by-side panels in the report
 cuts = np.array(CUTS)
-fig, axes = plt.subplots(2, 2, figsize=(20, 16))  # sized for the LHCb style's large fonts
-for i, p in enumerate(PEAKS):
-    get = lambda key: np.array([row[p][key] for row in scan])
-    axes[0, 0].plot(cuts, get("purity"), "o-", label=rf"$\Upsilon({p})$")
-    axes[0, 1].plot(cuts, get("signif") / get("signif")[0], "o-")
-    axes[1, 0].plot(cuts, get("err") / get("err")[0], "o-")
-    x = np.array([sl["centre"] for sl in slices])
-    axes[1, 1].errorbar(x + 0.04 * (i - 1), 1e3 * (np.array([sl[p]["mu"] for sl in slices]) - flatness[p]["mean"]),
-                        yerr=1e3 * np.array([sl[p]["err"] for sl in slices]), fmt="o",
-                        label=rf"$\Upsilon({p})$: $\chi^2$/ndof = {flatness[p]['chi2']:.1f}/{flatness[p]['ndof']}")
-axes[0, 0].set(ylabel=r"$S/(S+B)$ in $\mu\pm2\sigma$", title=r"Signal purity")
-axes[0, 1].set(ylabel=r"$S/\sqrt{S+B}$ / (no cut)", title=r"Signal significance $S/\sqrt{S+B}$")
-axes[1, 0].set(ylabel=r"$\delta\mu_\mathrm{stat}$ / (no cut)", title=r"Statistical uncertainty on $\mu$")
-axes[1, 1].set(ylabel=r"$\mu - \langle\mu\rangle$ [MeV/$c^2$]",
-               title="Mass in independent slices", ylim=(-6, 6), xlim=(1.3, 5.9))
-axes[1, 1].legend(fontsize=18, title="consistency with a constant", title_fontsize=18, loc="lower right")
-axes[1, 1].axhline(0, color="k", lw=0.8)
-for ax in (axes[0, 0], axes[0, 1], axes[1, 0]):
-    ax.set_xlabel(r"Cut on min($p_{\perp,1}, p_{\perp,2}$) [GeV/$c$]")
+CUT_LABEL = r"Soft muon $p_\perp$ cut [GeV/$c$]"
+panels = {"purity": (lambda p: get(p, "purity"), r"$S/(S+B)$ in $\mu\pm2\sigma$", "Signal purity"),
+          "significance": (lambda p: get(p, "signif") / get(p, "signif")[0], r"$S/\sqrt{S+B}$ / (no cut)",
+                           r"Signal significance $S/\sqrt{S+B}$"),
+          "stat_error": (lambda p: get(p, "err") / get(p, "err")[0], r"$\delta\mu_\mathrm{stat}$ / (no cut)",
+                         r"Statistical uncertainty on $\mu$")}
 
-axes[1, 1].set_xlabel(r"min($p_{\perp,1}, p_{\perp,2}$) in slice (median) [GeV/$c$]")
-axes[0, 0].legend()
-fig.suptitle(f"Selection on the softer muon's $p_\\perp$ ({args.dataset} data, three-peak {BASELINE_SIGNAL} fits)", fontsize=24)
-fig.tight_layout()
-ups.plotting.save_figure(fig, f"{output_subdir(args.dataset)}/cut_scan.png")
 
+def get(p, key):
+    return np.array([row[p][key] for row in scan])
+
+
+for name, (values, ylabel, title) in panels.items():
+    fig, ax = plt.subplots(figsize=(12, 9))
+    for p in PEAKS:
+        ax.plot(cuts, values(p), "o-", label=rf"$\Upsilon({p})$")
+    ax.set(xlabel=CUT_LABEL, ylabel=ylabel, title=title)
+    ax.margins(0.05)
+    ax.legend()
+    ups.plotting.save_figure(fig, f"{output_subdir(args.dataset)}/selection_{name}.png")

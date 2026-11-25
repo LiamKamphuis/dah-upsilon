@@ -22,6 +22,8 @@ args = parser.parse_args()
 mc = ups.select_muons(ups.load("mc"))["mass"]  # same selection on simulation and data
 mass = ups.select_muons(ups.load(args.dataset))["mass"]
 fits = {"gauss": ups.fit(ups.build_model(), mass, binned=args.binned)}
+# Selected-data plots are named shape_fit_* so they do not overwrite 01's unselected fit_3peaks_*
+ups.plotting.plot_fit(fits["gauss"], save=f"{output_subdir(args.dataset)}/shape_fit_gauss.png")
 mc_fits = {}
 
 # Fit MC first to pin tail parameters, then use fixed tails on dataset.
@@ -39,7 +41,7 @@ for signal in SHAPES if args.signal == "all" else [args.signal]:
     for label, r in (("simulation", mc_fit), ("data", shared)):  # what the fit cannot separate
         print(f"{signal}, {label}: |correlation| >= 0.5: " + ", ".join(
             f"{a}/{b} {rho:+.2f}" for a, b, rho in ups.compare.strong_correlations(r)))
-    ups.plotting.plot_fit(shared, save=f"{output_subdir(args.dataset)}/fit_3peaks_{signal}.png")
+    ups.plotting.plot_fit(shared, save=f"{output_subdir(args.dataset)}/shape_fit_{signal}.png")
 
 print("\nModel comparison\n" + ups.compare.table(fits))
 comparison = {}
