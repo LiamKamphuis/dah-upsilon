@@ -199,6 +199,14 @@ precisely, and the resolution varies with the muons' momenta and directions.
 Our dataset comes from the LHCb experiment in 2015, with <> candidate dimuons spanning a mass range of 9 - 11 \GeVcc.
 Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} meson signal
 
+\begin{figure}[!htbp]
+    \centering
+    \plot[\textwidth]{variables.png}
+    \caption{The six observables of the full 2015 sample before any selection: dimuon mass,
+    transverse momentum, pseudorapidity and momentum, and the transverse momenta of the two muons.}
+    \label{fig:variables}
+\end{figure}
+
 \subsection{Extended maximum-likelihood fits}
 \label{sec:m-fits}
 %% SCOPE: extended likelihood (yields as parameters); binned (250 bins of 8 MeV) vs unbinned and
@@ -259,6 +267,14 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
 
 \begin{figure}[!htbp]
     \centering
+    \plot[0.5\textwidth]{fit_1S_gauss.png}
+    \caption{Single-Gaussian fit to the \Ups{1S} peak (9.0--9.9\,GeV/$c^2$, exponential
+    background), with the pulls per bin below.}
+    \label{fig:fit-1s-gauss}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
     \plot[\textwidth]{error_scans_1S_gauss.png}
     \caption{\todo{caption: profiled vs fixed scans, HESSE band, Delta = 1}}
     \label{fig:error-scans}
@@ -316,6 +332,24 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
         \bottomrule
     \end{tabular}
 \end{table}
+
+\begin{figure}[!htbp]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \plot[\linewidth]{pulls_3peaks_gauss.png}
+        \caption{Gaussian signal.}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \plot[\linewidth]{fit_3peaks_double_cb.png}
+        \caption{Double Crystal Ball signal (baseline).}
+    \end{subfigure}
+    \caption{Three-peak fits with an exponential background, with the pulls per bin below each fit.
+    The Gaussian leaves a structured pattern of pulls at every peak; the double Crystal Ball
+    (tails shared, widths tied) removes most of it (\cref{tab:comparison}).}
+    \label{fig:fit-3peaks}
+\end{figure}
 
 \todo{text}
 
@@ -387,6 +421,16 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
     \end{tabular}
 \end{table}
 
+\begin{figure}[!htbp]
+    \centering
+    \plot[0.6\textwidth]{kinematic_bins_sigma_double_cb.png}
+    \caption{\Ups{1S} width per $(y, \pT)$ cell from the simultaneous double-CB fit, against the
+    \pT{} bin centre, one line per rapidity bin; the dashed line is the inclusive fit. The narrow
+    fraction shared by all cells is strongly correlated with every cell's width, so the pattern
+    across cells is better determined than the absolute values.}
+    \label{fig:sigma-map}
+\end{figure}
+
 \todo{text}
 
 \subsection{Momentum scale}
@@ -397,6 +441,17 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
 %% FIGS:  momentum_scale.png.
 %% NUMBERS: 05_momentum_scale.py (momentum_scale.json).
 %% REFS:  LHCb:2023ood.
+
+\begin{figure}[!htbp]
+    \centering
+    \plot[0.9\textwidth]{momentum_scale.png}
+    \caption{Top: \Ups{1S} peak position relative to its known mass, $\alpha_\mathrm{eff} = \mu/m - 1$,
+    in bins of dimuon momentum $p$ (left) and of the softer muon's \pT{} (right), for data and
+    simulation. Bottom: data minus simulation, with a straight-line fit in $p$ and a constant in
+    \ptmin{}; the band is the $\pm3\times10^{-4}$ uncertainty of the LHCb momentum-scale
+    calibration~\cite{LHCb:2023ood}.}
+    \label{fig:momentum-scale}
+\end{figure}
 
 \todo{text}
 
@@ -576,6 +631,44 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
         \bottomrule
     \end{tabular}
 \end{table}
+
+\begin{figure}[!htbp]
+    \centering
+    \plot[0.75\textwidth]{profile_mu_1S.png}
+    \caption{Profile likelihood of $\mu_{1S}$ for the three-peak fit with each signal shape. The
+    choice of shape moves the fitted mass by up to 1.25\,\MeVcc, far more than each curve's
+    statistical width ($\Delta(-2\ln L) = 1$, dotted).}
+    \label{fig:profile}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \plot[\linewidth]{kinematic_bins_worst_cell_double_cb.png}
+        \caption{Worst cell of the simultaneous fit.}
+        \label{fig:worst-cell}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \plot[\linewidth]{pt1_vs_mass.png}
+        \caption{Leading-muon \pT{} against dimuon mass.}
+        \label{fig:pt1-mass}
+    \end{subfigure}
+    \caption{(a) The cell with the largest $\chi^2$ (458 for 250 bins): the pulls follow a smooth
+    curve across the window, pointing at the background shape rather than the signal. (b) The
+    \Ups{} peaks stand out above the combinatorial background in the two-dimensional distribution.}
+    \label{fig:appendix-extra}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \centering
+    \plot[0.8\textwidth]{toy_pulls.png}
+    \caption{Pulls of the three masses and $\sigma_{1S}$ in 500 pseudo-experiments generated from
+    the inclusive double-CB fit (summary in \cref{tab:toys}), with a Gaussian fit (red) and the unit
+    Gaussian (dashed).}
+    \label{fig:toys}
+\end{figure}
 
 \section{Software and reproducibility}
 \label{app:software}
