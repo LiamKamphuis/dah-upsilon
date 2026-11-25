@@ -46,11 +46,11 @@ for i in range(args.toys):
 
 ok = [row for row in rows if row["valid"]]
 summary = {"toys": args.toys, "invalid": args.toys - len(ok), "params": {}}
-fig, axes = plt.subplots(1, len(PARAMS), figsize=(10 * len(PARAMS), 9))
+fig, axes = plt.subplots(2, 2, figsize=(20, 16))  # 2 x 2 reads better on a page than 1 x 4
 grid = np.linspace(-4, 4, 200)
 print(f"\n{len(ok)}/{args.toys} valid toy fits\n{'parameter':<10}{'pull mean':>16}{'pull width':>16}"
       f"{'bias [MeV]':>14}{'<error> [MeV]':>16}{'KS p':>10}")
-for ax, p in zip(axes, PARAMS):
+for ax, p in zip(axes.flat, PARAMS):
     value = np.array([row[p]["value"] for row in ok])
     error = np.array([row[p]["error"] for row in ok])
     pull = (value - truth.values[p]) / error
@@ -68,9 +68,11 @@ for ax, p in zip(axes, PARAMS):
     ax.plot(grid, n * 0.5 * stats.norm.pdf(grid, mean, width), "C3",
             label=rf"mean ${mean:+.2f}\pm{mean_err:.2f}$" + "\n" + rf"width ${width:.2f}\pm{width_err:.2f}$")
     ax.plot(grid, n * 0.5 * stats.norm.pdf(grid), "0.5", ls="--", label=f"unit Gaussian (KS p = {ks:.2f})")
-    ax.set(xlabel=f"pull of {p}", ylabel="Toys / bin", title=f"Pull of {p}")
-    ax.legend(fontsize=20)
-fig.tight_layout()
+    symbol = rf"$\{p.split('_')[0]}_{{{p.split('_')[1]}}}$"  # mu_1S -> $\mu_{1S}$
+    ax.set(xlabel=f"Pull of {symbol}", ylabel="Toys / bin")
+    ax.set_ylim(0, 1.6 * ax.get_ylim()[1])  # headroom so the legend sits above the histogram
+    ax.legend(loc="upper left", fontsize=16)
+fig.tight_layout(w_pad=3)
 
 ups.save_json({"truth": truth.values, "summary": summary, "toys": rows}, "toys.json", args.dataset)
 ups.plotting.save_figure(fig, f"{output_subdir(args.dataset)}/toy_pulls.png")
