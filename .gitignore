@@ -30,3 +30,5 @@ report/*.out
 report/*.run.xml
 report/*.toc
 report/*.pdf
+report/*.fdb_latexmk
+report/*.fls

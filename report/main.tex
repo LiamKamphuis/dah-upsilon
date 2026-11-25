@@ -76,6 +76,7 @@
 % ---------------------------------------------------------------- title page
 \begin{document}
 \pagestyle{empty}
+\pagenumbering{Alph}   % title page numbered A, so hyperref's page.1 anchor is not used twice
 
 \IfFileExists{PandA_crest.pdf}{\par\noindent\includegraphics[width=12cm]{PandA_crest.pdf}}
 
@@ -105,7 +106,7 @@
 
 % ---------------------------------------------------------------- body
 \pagestyle{plain}
-\setcounter{page}{1}
+\pagenumbering{arabic}
 \tableofcontents
 \newpage
 
