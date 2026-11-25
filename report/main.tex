@@ -122,7 +122,21 @@
 %% REFS:  LHCb:2013itw (the reference analysis), ParticleDataGroup:2024cfk.
 %% PAGES: 0.5
 
-\todo{introduction}
+The $\Upsilon$ mesons are bound states of a bottom quark and its antiquark ($b\bar b$).
+The ground state, \Ups{1S}, was discovered in 1977 as a narrow peak in the dimuon mass
+spectrum near \SI{9.5}{GeV/\clight^2}, the first evidence for a fifth quark. The radial
+excitations \Ups{2S} and \Ups{3S} were found soon after. Because the $b$ quark is heavy,
+the $b\bar b$ system is close to non-relativistic and is often called the hydrogen atom of
+the strong interaction: the spacing of its levels probes the potential between a quark and
+an antiquark. The three lowest states lie below the threshold for decay into a pair of $B$
+mesons. Their widths are therefore tiny and they decay to $\mu^+\mu^-$ often enough to stand
+out as three sharp peaks. Their masses are known to better than
+\SI{0.5}{MeV/\clight^2}~\cite{ParticleDataGroup:2024cfk}. This makes them natural reference
+points for a mass measurement: since the answer is known, what is tested is the analysis
+itself, meaning how the peaks are modelled, how the uncertainties are estimated, and how
+well the detector's momentum measurement is calibrated.
+
+
 
 % ================================================================ 2 BACKGROUND
 \section{Background}
@@ -137,7 +151,17 @@
 %%        p, muon pTs); rapidity y vs the eta column; the background (combinatorial muon pairs).
 %% REFS:  LHCb:2013itw; ParticleDataGroup:2024cfk.
 
-\todo{Upsilon states, observables and backgrounds}
+The \Ups{1S}, \Ups{2S} and \Ups{3S} are the $n = 1, 2, 3$ radial states with the quark
+spins aligned and no orbital angular momentum ($n\,{}^3S_1$). This gives them
+$J^{PC} = 1^{--}$, the quantum numbers of the photon, so the $b\bar b$ pair can annihilate
+through a virtual photon into a lepton pair. Decays into a $B\bar B$ pair are forbidden by
+energy conservation below threshold (about \SI{10.56}{GeV/\clight^2}). The remaining strong
+decays must go through three gluons, which is strongly suppressed (the OZI rule). As a
+result the natural widths are only about 54, 32 and \SI{20}{keV}\todo{PDG 2024}, and the
+dimuon branching fractions are 2--2.5\%\todo{PDG 2024}. At the LHC the $\Upsilon$ states
+are produced mainly through gluon--gluon fusion. LHCb, a forward spectrometer covering
+$2 < \eta < 5$, records them in large numbers~\cite{LHCb:2013itw}.
+
 
 \subsection{Mass resolution, radiative tails and the momentum scale}
 \label{sec:bg-resolution}
@@ -149,7 +173,13 @@
 %% REFS:  Skwarnicki:1986xj; LHCb:2023ood; LHCb:2011ikb (momentum-scale systematic in a mass
 %%        measurement).
 
-\todo{resolution, FSR tail, momentum scale}
+With natural widths of tens of keV, the observed width of each peak, tens of MeV, comes
+almost entirely from the detector. The dimuon mass is computed from the two measured muon
+momenta and their opening angle. At these momenta the momentum term dominates, so
+$\delta m/m \approx \delta p/p$: the three peaks share the same relative resolution, and
+their absolute widths grow with mass. The momentum itself is measured from how much each
+track bends in the magnet. A faster track bends less, so its momentum is measured less
+precisely, and the resolution varies with the muons' momenta and directions.
 
 % ================================================================ 3 METHOD
 \section{Method}
@@ -166,7 +196,8 @@
 %% NUMBERS: 01_measure_masses.py (event counts); 03_selection.py.
 %% REFS:  ParticleDataGroup:2016lqr.
 
-\todo{data, simulation, selection}
+Our dataset comes from the LHCb experiment in 2015, with <> candidate dimuons spanning a mass range of 9 - 11 \GeVcc.
+Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} meson signal
 
 \subsection{Extended maximum-likelihood fits}
 \label{sec:m-fits}
@@ -233,6 +264,23 @@
     \label{fig:error-scans}
 \end{figure}
 
+\begin{table}[!htbp]
+    \centering
+    \caption{Statistical errors on the \Ups{1S} Gaussian fit parameters [\MeVcc], by five methods:
+    HESSE (curvature at the minimum), MINOS, the $\Delta(-2\ln L) = 1$ crossings of the profiled
+    scan and of the scan with the other parameters fixed, and $\sigma/\sqrt{N}$
+    ($\sigma/\sqrt{2N}$ for $\sigma_{1S}$), which ignores the background.}
+    \label{tab:errors}
+    \begin{tabular}{lccccc}
+        \toprule
+        & HESSE & MINOS & Profiled scan & Fixed scan & $\sigma/\sqrt{N}$ \\
+        \midrule
+        $\mu_{1S}$ & 0.100 & $^{+0.100}_{-0.100}$ & $^{+0.100}_{-0.100}$ & $^{+0.099}_{-0.099}$ & 0.059 \\
+        $\sigma_{1S}$ & 0.103 & $^{+0.103}_{-0.103}$ & $^{+0.103}_{-0.103}$ & $^{+0.089}_{-0.089}$ & 0.042 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 \todo{text}
 
 \subsection{Signal shape: simulation versus data}
@@ -245,7 +293,31 @@
 %%        double-CB parameters.
 %% NUMBERS: 02_signal_shape.py --binned (signal_shape.json).
 
-\todo{text, model-comparison table, MC-vs-data table}
+\begin{table}[!htbp]
+    \centering
+    \caption{Three-peak fits to the selected data (250 bins) with each signal shape: free
+    parameters $k$, Baker--Cousins $\chi^2$, its $p$-value, the $p$-value of the runs test on the
+    signs of the residuals, AIC and BIC relative to the best model, and $\mu_{1S} - m_\mathrm{PDG}$
+    [\MeVcc] (statistical error, no bias correction). Tails are shared by the three peaks; for the double CB
+    with tails fixed to simulation, the likelihood ratio against free tails is
+    $-2\Delta\ln L = 586$ for 4 parameters. The shape parameters are compared in \cref{tab:shape}.}
+    \label{tab:comparison}
+    \small
+    \setlength{\tabcolsep}{4pt}
+    \begin{tabular}{lccccccc}
+        \toprule
+        Signal & $k$ & $\chi^2/\mathrm{ndof}$ & $p(\chi^2)$ & $p(\mathrm{runs})$ & $\Delta$AIC & $\Delta$BIC & $\mu_{1S} - m_\mathrm{PDG}$ \\
+        \midrule
+        Gaussian & 11 & 3072/239 & $<10^{-300}$ & $3\times10^{-15}$ & 2745 & 2721 & $-4.47 \pm 0.09$ \\
+        Double Gaussian & 11 & 1038/239 & $6\times10^{-100}$ & $3\times10^{-9}$ & 712 & 687 & $-4.42 \pm 0.09$ \\
+        Crystal Ball & 11 & 971/239 & $7\times10^{-89}$ & $5\times10^{-9}$ & 645 & 620 & $-3.22 \pm 0.10$ \\
+        Double CB, simulation tails & 9 & 908/241 & $5\times10^{-78}$ & $8\times10^{-7}$ & 578 & 528 & $-4.08 \pm 0.09$ \\
+        Double CB & 13 & 322/237 & $2\times10^{-4}$ & $1\times10^{-3}$ & 0 & 0 & $-3.58 \pm 0.11$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\todo{text}
 
 \subsection{Parameter correlations and over-parametrisation}
 \label{sec:r-correlations}
@@ -297,6 +369,24 @@
 %%        table: masses inclusive vs simultaneous for both shapes.
 %% NUMBERS: 04_kinematic_bins.py --signal double_cb / crystal_ball (kinematic_bins_*.json).
 
+\begin{table}[!htbp]
+    \centering
+    \caption{Fitted masses minus PDG [\MeVcc] with statistical errors, for one inclusive fit and
+    the simultaneous fit in 12 $(y, \pT)$ cells, in the fiducial region. $\chi^2$ is the
+    Baker--Cousins statistic summed over all bins. No shape-bias correction is applied here.}
+    \label{tab:kinematic}
+    \begin{tabular}{llcccc}
+        \toprule
+        Signal & Fit & $\chi^2/\mathrm{ndof}$ & \Ups{1S} & \Ups{2S} & \Ups{3S} \\
+        \midrule
+        Crystal Ball & inclusive & 860/239 & $-3.22 \pm 0.11$ & $-3.68 \pm 0.27$ & $-4.00 \pm 0.47$ \\
+        & 12 cells & 3666/2923 & $-3.38 \pm 0.10$ & $-3.86 \pm 0.25$ & $-4.25 \pm 0.44$ \\
+        Double CB & inclusive & 312/237 & $-3.56 \pm 0.11$ & $-3.96 \pm 0.27$ & $-4.18 \pm 0.47$ \\
+        & 12 cells & 3470/2921 & $-3.60 \pm 0.10$ & $-4.06 \pm 0.25$ & $-4.31 \pm 0.43$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 \todo{text}
 
 \subsection{Momentum scale}
@@ -322,15 +412,48 @@
 
 \begin{table}[!htbp]
     \centering
-    \caption{\todo{caption: final masses}}
-    \label{tab:final}
-    \begin{tabular}{lcccc}
+    \caption{Uncertainties on the masses [\MeVcc]. Each fit-model row is the shift of the
+    bias-corrected masses when one choice of the baseline fit is changed; a change of signal shape
+    or selection is corrected with its own simulation fit.}
+    \label{tab:systematics}
+    \begin{tabular}{lccc}
         \toprule
-        & Mass [\MeVcc] & Stat. & Fit model & Momentum scale \\
+        & \Ups{1S} & \Ups{2S} & \Ups{3S} \\
         \midrule
-        \Ups{1S} & \todo{} & & & \\
-        \Ups{2S} & \todo{} & & & \\
-        \Ups{3S} & \todo{} & & & \\
+        Statistical (fit and simulation bias) & 0.13 & 0.27 & 0.44 \\
+        \midrule
+        Fit window 9.1--10.9\,GeV/$c^2$ & $+0.05$ & $+0.11$ & $+0.08$ \\
+        Bin width doubled (16\,MeV) & $+0.02$ & $+0.03$ & $-0.07$ \\
+        Crystal Ball signal & $-0.13$ & $-0.16$ & $-0.32$ \\
+        Quadratic background & $-0.01$ & $+0.05$ & $+0.10$ \\
+        $\ptmin \ge 2.5$\,GeV/$c$ & $+0.08$ & $-0.04$ & $-0.15$ \\
+        $\ptmin \ge 3.5$\,GeV/$c$ & $+0.09$ & $-0.13$ & $-0.59$ \\
+        No kinematic cells (inclusive fit) & $+0.07$ & $+0.14$ & $+0.17$ \\
+        \midrule
+        Fit model (sum in quadrature) & 0.20 & 0.28 & 0.73 \\
+        Momentum scale ($3\times10^{-4}$) & 2.84 & 3.01 & 3.10 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+    \centering
+    \caption{Measured masses [\MeVcc]: value $\pm$ stat.\ $\pm$ fit model $\pm$ momentum scale, and
+    the difference from PDG~\cite{ParticleDataGroup:2024cfk}. Below the line, the cross-checks of
+    the momentum scale: the \Ups{2S} and \Ups{3S} masses with the scale calibrated on the \Ups{1S}
+    (stat.\ only), and one scale factor fitted to all three peaks.}
+    \label{tab:final}
+    \begin{tabular}{lcc}
+        \toprule
+        & Mass & $-$ PDG \\
+        \midrule
+        \Ups{1S} & $9455.95 \pm 0.13 \pm 0.20 \pm 2.84$ & $-4.45$ \\
+        \Ups{2S} & $10018.44 \pm 0.27 \pm 0.28 \pm 3.01$ & $-4.96$ \\
+        \Ups{3S} & $10349.86 \pm 0.44 \pm 0.73 \pm 3.10$ & $-5.24$ \\
+        \midrule
+        \Ups{2S}, scale calibrated on \Ups{1S} & & $-0.25 \pm 0.27$ \\
+        \Ups{3S}, scale calibrated on \Ups{1S} & & $-0.37 \pm 0.44$ \\
+        Common scale $s-1$ & \multicolumn{2}{c}{$(-4.75 \pm 0.14)\times10^{-4}$, $\chi^2/\mathrm{ndof} = 1.44/2$} \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -365,7 +488,94 @@
 \label{app:fits}
 %% SCOPE: full parameter tables of the baseline fits (data and simulation) and the per-cell table
 %%        of the kinematic fit; the toy pull figure if it does not fit in Sec. 4.
-%% NUMBERS: signal_shape.json, kinematic_bins_double_cb.json, toys.json.
+%% NUMBERS: signal_shape.json, kinematic_bins_double_cb.json, toys.json, bin_width_scan_gauss.json.
+
+\begin{table}[!htbp]
+    \centering
+    \small
+    \caption{The simultaneous double-CB fit per $(y, \pT)$ cell: selected candidates, fitted
+    \Ups{1S} and \Ups{3S} yields, \Ups{1S} width, and the Baker--Cousins $\chi^2$ over the cell's
+    250 bins (7--8 free parameters per cell plus the shared ones).}
+    \label{tab:cells}
+    \begin{tabular}{ccccccc}
+        \toprule
+        $y$ & \pT{} [GeV/$c$] & Candidates & $N_{1S}$ & $N_{3S}$ & $\sigma_{1S}$ [\MeVcc] & $\chi^2$ \\
+        \midrule
+        $2.0$--$3.0$ & $0$--$3$ & 335\,884 & 60\,812 & 5\,787 & $32.2 \pm 0.7$ & 273 \\
+        $2.0$--$3.0$ & $3$--$6$ & 318\,742 & 66\,437 & 8\,854 & $33.0 \pm 0.7$ & 458 \\
+        $2.0$--$3.0$ & $6$--$10$ & 138\,951 & 38\,235 & 5\,717 & $33.7 \pm 0.7$ & 309 \\
+        $2.0$--$3.0$ & $10$--$15$ & 50\,383 & 18\,709 & 3\,499 & $35.8 \pm 0.8$ & 236 \\
+        $3.0$--$3.5$ & $0$--$3$ & 225\,397 & 40\,375 & 4\,106 & $36.6 \pm 0.8$ & 242 \\
+        $3.0$--$3.5$ & $3$--$6$ & 189\,646 & 40\,088 & 5\,381 & $37.1 \pm 0.8$ & 275 \\
+        $3.0$--$3.5$ & $6$--$10$ & 110\,624 & 24\,586 & 3\,699 & $39.2 \pm 0.9$ & 249 \\
+        $3.0$--$3.5$ & $10$--$15$ & 29\,649 & 11\,050 & 2\,172 & $41.9 \pm 0.9$ & 273 \\
+        $3.5$--$4.5$ & $0$--$3$ & 163\,834 & 42\,671 & 4\,437 & $48.4 \pm 1.0$ & 299 \\
+        $3.5$--$4.5$ & $3$--$6$ & 143\,537 & 43\,290 & 5\,496 & $50.2 \pm 1.0$ & 312 \\
+        $3.5$--$4.5$ & $6$--$10$ & 72\,832 & 22\,749 & 3\,486 & $53.9 \pm 1.2$ & 269 \\
+        $3.5$--$4.5$ & $10$--$15$ & 23\,925 & 10\,005 & 1\,951 & $64.4 \pm 1.5$ & 275 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+    \centering
+    \caption{Double-CB shape parameters on simulation (pure \Ups{1S}, unbinned), on data (one
+    inclusive three-peak fit, tails shared) and in the simultaneous fit in cells. In the cell fit
+    the narrow fraction is correlated with every cell's width ($+0.85$ to $+0.96$) and with the
+    width ratio ($+0.92$), and $\alpha$ with $n$ ($-0.91$); no mass has a correlation above 0.5
+    with any parameter.}
+    \label{tab:shape}
+    \begin{tabular}{lccc}
+        \toprule
+        & Simulation & Data, inclusive & Data, 12 cells \\
+        \midrule
+        $\sigma_{1S}$ [\MeVcc] & $34.3 \pm 0.1$ & $35.9 \pm 0.6$ & per cell (\cref{tab:cells}) \\
+        $\alpha$ & $1.93 \pm 0.01$ & $1.52 \pm 0.04$ & $1.60 \pm 0.04$ \\
+        $n$ & $1.08 \pm 0.02$ & $3.78 \pm 0.62$ & $3.66 \pm 0.58$ \\
+        Width ratio $r$ & $2.16 \pm 0.03$ & $1.69 \pm 0.03$ & $1.52 \pm 0.06$ \\
+        Narrow fraction $f$ & $0.907 \pm 0.005$ & $0.622 \pm 0.038$ & $0.730 \pm 0.068$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+    \centering
+    \caption{Pseudo-experiments: 500 binned toys generated from the inclusive double-CB fit to
+    the selected data and refitted (none failed). Pull $= (\hat\theta - \theta_\mathrm{true})/\hat\sigma$;
+    the bias is the mean of $\hat\theta - \theta_\mathrm{true}$ [\MeVcc]; KS is the $p$-value of a
+    Kolmogorov--Smirnov test of the pulls against a unit Gaussian.}
+    \label{tab:toys}
+    \begin{tabular}{lcccc}
+        \toprule
+        & Pull mean & Pull width & Bias & KS $p$ \\
+        \midrule
+        $\mu_{1S}$ & $-0.04 \pm 0.05$ & $1.014 \pm 0.032$ & $-0.005$ & 0.50 \\
+        $\mu_{2S}$ & $-0.02 \pm 0.04$ & $0.990 \pm 0.031$ & $-0.004$ & 0.41 \\
+        $\mu_{3S}$ & $+0.04 \pm 0.04$ & $0.984 \pm 0.031$ & $+0.017$ & 0.80 \\
+        $\sigma_{1S}$ & $+0.10 \pm 0.04$ & $1.002 \pm 0.032$ & $+0.050$ & 0.23 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[!htbp]
+    \centering
+    \caption{Bin width of the binned likelihood: the \Ups{1S} Gaussian fit (window 9.0--9.9\,GeV/$c^2$,
+    $\sigma_{1S} = 43.3$\,\MeVcc) refitted with bins from 2 to 64\,MeV, compared with the unbinned fit
+    (statistical error 0.0999\,\MeVcc). The three-peak fits use 8\,MeV bins.}
+    \label{tab:bins}
+    \begin{tabular}{ccccc}
+        \toprule
+        Bins & Width [MeV] & $\sigma_{1S}$/width & $\mu - \mu_\mathrm{unbinned}$ [\MeVcc] & Error / unbinned \\
+        \midrule
+        450 & 2.0 & 21.6 & $-0.0009$ & 1.0003 \\
+        225 & 4.0 & 10.8 & $-0.0028$ & 1.0007 \\
+        112 & 8.0 & 5.4 & $-0.0029$ & 1.0023 \\
+        56 & 16.1 & 2.7 & $-0.0192$ & 1.0084 \\
+        28 & 32.1 & 1.3 & $-0.0982$ & 1.0340 \\
+        14 & 64.3 & 0.7 & $+0.0005$ & 1.1579 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \section{Software and reproducibility}
 \label{app:software}

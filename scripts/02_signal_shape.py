@@ -42,6 +42,11 @@ for signal in SHAPES if args.signal == "all" else [args.signal]:
     ups.plotting.plot_fit(shared, save=f"{output_subdir(args.dataset)}/fit_3peaks_{signal}.png")
 
 print("\nModel comparison\n" + ups.compare.table(fits))
+comparison = {}
+for name, r in fits.items():
+    ic, g, ru = ups.compare.information_criteria(r), ups.compare.gof(r), ups.compare.runs_test(r)
+    comparison[name] = {"k": ic.k, "chi2": g.stat, "ndof": g.ndof, "p": g.pvalue, "runs_p": ru.pvalue,
+                        "aic": ic.aic, "bic": ic.bic}
 
 # Nested test with the simple model inside the parameter space (tails at the MC values) so Wilks holds
 # Essentially this tests whether the data's tails are compatible with the simulation's
@@ -60,4 +65,4 @@ ups.plotting.plot_profiles(profiled, "mu_1S", ref=PDG_MASS["1S"], xlabel=r"$\mu_
 
 ups.save_json({"mc": {k: r.to_dict() for k, r in mc_fits.items()},
                    "data": {k: r.to_dict() for k, r in fits.items()},
-                   "tails_test": tails_test}, "signal_shape.json", args.dataset)
+                   "tails_test": tails_test, "comparison": comparison}, "signal_shape.json", args.dataset)

@@ -44,17 +44,20 @@ ups.plotting.plot_error_scans(fit_1s, SCAN, save=f"{out}/error_scans_1S_{args.si
 N_sig, sigma = fit_1s.values["N_1S"], fit_1s.values["sigma_1S"]
 by_hand = {"mu_1S": sigma / np.sqrt(N_sig), "sigma_1S": sigma / np.sqrt(2 * N_sig)} # Gaussian, std. error on mean
 print(f"\n1S errors [MeV/c^2]   {'HESSE':>8}{'MINOS -/+':>18}{'scan, profiled':>20}{'scan, fixed':>18}{'sigma/sqrt(N)':>15}")
+errors = {}
 for name in SCAN:
     best, me = fit_1s.values[name], fit_1s.minuit.merrors[name]
     prof = ups.compare.crossings(*ups.compare.profile_scan(fit_1s, name, size=41))
     fixed = ups.compare.crossings(*ups.compare.fixed_scan(fit_1s, name))
+    errors[name] = {"value": best, "hesse": fit_1s.errors[name], "minos": (me.lower, me.upper),
+                    "profiled": (prof[0] - best, prof[1] - best), "fixed": (fixed[0] - best, fixed[1] - best),
+                    "sigma_over_sqrt_n": by_hand[name]}
     print(f"{name:<22}{1e3 * fit_1s.errors[name]:>8.4f}{1e3 * me.lower:>9.4f}/{1e3 * me.upper:+.4f}"
           f"{1e3 * (prof[0] - best):>10.4f}/{1e3 * (prof[1] - best):+.4f}"
           f"{1e3 * (fixed[0] - best):>9.4f}/{1e3 * (fixed[1] - best):+.4f}{1e3 * by_hand[name]:>13.4f}")
+ups.save_json(errors, f"errors_1S_{args.signal}.json", args.dataset)
 
-# Bin width: a binned fit loses information once the bins are no longer small against the peak
-# width. Refit the 1S with bin widths from 2 to 64 MeV and compare mass and error with the unbinned fit
-# (the three-peak fits use 250 bins over 2 GeV = 8 MeV).
+# A scan of how bin width may affect the fit, testing binned fit parameters against an unbinned fit
 unbinned = fit_1s if not args.binned else ups.fit(fit_1s.model, events["mass"], start=fit_1s.values, progress=False)
 mu0, err0, sigma0 = (unbinned.values["mu_1S"], unbinned.errors["mu_1S"], unbinned.values["sigma_1S"])
 print(f"\nBin width scan (1S, sigma = {1e3 * sigma0:.1f} MeV/c^2; unbinned error {1e3 * err0:.4f} MeV/c^2)")
