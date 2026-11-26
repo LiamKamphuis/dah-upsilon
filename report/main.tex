@@ -24,6 +24,7 @@
 \usepackage{array,tabularx}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{float}                    % [H] keeps a float next to its text
 \usepackage{xcolor}
 \usepackage[hidelinks]{hyperref}
 \usepackage[capitalise,noabbrev]{cleveref}
@@ -119,47 +120,24 @@
 %%        delta m = alpha m, 3e-4); aim; roadmap. ~1 page.
 %% REFS:  ParticleDataGroup:2024cfk; LHCb:2013itw; Skwarnicki:1986xj; LHCb:2023ood.
 
-Particle accelerators and detectors are fundamental in the process of discovery in high-energy
-physics, where theoretical predictions of the Standard Model are tested against experimental data.
-Accepting or rejecting hypotheses from theory, however, requires precise measurements of particle
-states, and so detectors need reliable calibration targets.
-The ideal target is a particle whose mass is already known far better than the detector can measure
-it, and whose intrinsic width is negligible, so that the peak it leaves in the data reflects the
-detector alone.
-The $\Upsilon$ mesons, bound states of a bottom quark and its antiquark ($b\bar b$), come close to
-this ideal.
-Their three lowest states, \Ups{1S}, \Ups{2S} and \Ups{3S}, decay to muon pairs and appear as
-narrow peaks in the dimuon mass spectrum between 9 and 11 \GeVcc, with masses known to better than
-0.5 \MeVcc~\cite{ParticleDataGroup:2024cfk}.
-Lying below the threshold for decay into a pair of $B$ mesons (about 10.56 \GeVcc), they can decay
-only through a strongly suppressed annihilation of the $b\bar b$ pair, so their natural widths are
-only about 54, 32 and \SI{20}{keV}~\cite{ParticleDataGroup:2024cfk}.
+Particle accelerators and detectors are fundamental in the process of discovery in high-energy physics, where theoretical predictions of the Standard Model are tested against experimental data.
+Accepting or rejecting hypotheses from theory, however, requires precise measurements of particle states, and so detectors need reliable calibration targets.
+The ideal target is a particle whose mass is known far better than the detector can measure it, and whose natural width is negligible, so that its peak in the data reflects the detector alone.
+The $\Upsilon$ mesons, bound states of a bottom quark and its antiquark ($b\bar b$), come close to this ideal.
+Their three lowest states, \Ups{1S}, \Ups{2S} and \Ups{3S}, decay to muon pairs and appear as narrow peaks in the dimuon mass spectrum between 9 and 11\,\GeVcc{}, with masses known to better than 0.5\,\MeVcc{}~\cite{ParticleDataGroup:2024cfk}.
+Lying below the threshold for decay into a pair of $B$ mesons, they can decay only through the strongly suppressed annihilation of the $b\bar b$ pair, which gives natural widths of only 54, 32 and \SI{20}{keV}~\cite{ParticleDataGroup:2024cfk}.
 
-With widths this small, the observed peaks, tens of MeV wide, are almost entirely the detector's
-resolution, and their shape records how well the muon momenta are measured.
-The dimuon mass is computed from the two measured muon momenta and their opening angle.
-At these momenta the momentum term dominates, so $\delta m/m \approx \delta p/p$: the three peaks
-share the same relative resolution, and their absolute widths grow with mass.
-The momentum is measured from how much each track bends in the magnet, and a faster track bends less,
-so the resolution varies with the muons' momenta and directions.
-Photons radiated by the muons lower the reconstructed mass of some
-candidates, which gives each peak a tail on its low-mass side, conventionally described by a
-Crystal Ball function.
-The peak positions, in turn, test the momentum calibration: because the masses are known, a
-miscalibration $p \to (1+\alpha)p$ appears directly as a shift $\delta m = \alpha m$.
-LHCb calibrates this scale to $3\times10^{-4}$~\cite{LHCb:2023ood},
-about 3 \MeVcc at the $\Upsilon$ masses.
+The observed peaks, tens of MeV wide, are therefore almost entirely detector resolution.
+The mass resolution is dominated by the momentum resolution, so $\delta m/m \approx \delta p/p$ and the three peaks share the same relative width.
+Since the momentum is measured from the curvature of each track in the magnetic field, the resolution worsens for stiffer tracks and varies with the muon kinematics.
+Photons radiated by the muons lower the reconstructed mass of some candidates and give each peak a low-mass tail, conventionally described by a Crystal Ball function.
+The peak positions, in turn, test the momentum calibration, as a scale error $p \to (1+\alpha)p$ shifts every mass by $\delta m = \alpha m$.
+LHCb calibrates this scale to $3\times10^{-4}$~\cite{LHCb:2023ood}, or about 3\,\MeVcc{} at the $\Upsilon$ masses.
 
-This report measures the three $\Upsilon$ masses with extended maximum-likelihood fits to dimuon
-candidates recorded in 2015 by LHCb, a forward spectrometer designed for the study of particles
-containing b or c quarks.~\cite{LHCb:2013itw}.
-Since the true masses are known, the measurement also tests the analysis itself: how the peak
-shape is modelled, how the result depends on the selection and the muon kinematics, and how
-the uncertainties are estimated.
+This report measures the three $\Upsilon$ masses with extended maximum-likelihood fits to dimuon candidates recorded in 2015 by LHCb, a forward spectrometer designed for the study of particles containing $b$ or $c$ quarks~\cite{LHCb:2013itw}.
+Since the true masses are known, the measurement also tests the analysis itself, including the peak-shape model, the dependence on the selection and muon kinematics, and the estimate of the uncertainties.
 \Cref{sec:method} describes the data, the fitting method and the mass models.
-\Cref{sec:results} follows the project tasks: Gaussian fits to one and then three peaks,
-extended signal models, kinematic selection and binning, and finally the systematic uncertainties
-and the measured masses.
+\Cref{sec:results} follows the project tasks, from Gaussian fits to one and three peaks, through extended signal models and the kinematic selection and binning, to the systematic uncertainties and the final masses.
 \Cref{sec:conclusion} concludes.
 
 % ================================================================ 2 METHOD
@@ -176,14 +154,24 @@ and the measured masses.
 %% NUMBERS: 01_measure_masses.py (event counts); 03_selection.py.
 %% REFS:  ParticleDataGroup:2016lqr.
 
-Our dataset comes from the LHCb experiment in 2015, with <> candidate dimuons spanning a mass range of 9 - 11 \GeVcc.
-Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} meson signal
+The data consist of 4\,689\,467 dimuon candidates recorded by LHCb in 2015 in proton--proton collisions at $\sqrt{s} = \SI{13}{TeV}$, with masses between 9.0 and 11.0\,\GeVcc{} (\cref{fig:variables}).
+Each candidate records the dimuon mass $m$, transverse momentum \pT{}, pseudorapidity $\eta$ and momentum $p$, and the transverse momenta $p_{\mathrm{T},1}$ and $p_{\mathrm{T},2}$ of the two muons.
+Most candidates are combinatorial background from pairs of unrelated muons or misidentified hadrons~\cite{LHCb:2013itw}.
+
+A sample of 398\,842 simulated \Ups{1S} decays, with no background, accompanies the data.
+The sample carries no record of its generator settings.
+As it accompanies the 2015 data, we assume it was generated with the world-average mass of that time, $m_{1S} = 9460.30\,\MeVcc$~\cite{ParticleDataGroup:2016lqr}, and use it to measure how far the fitted peak position lies from the true mass for each signal model (\cref{sec:r-shape}).
+
+The background is reduced by requiring the soft muon, the muon of the pair with the lower transverse momentum, to have $\ptmin \geq 3\,\GeVc$.
+Background candidates contain more low-momentum muons than \Ups{nS} decays, so the cut removes background faster than signal (\cref{sec:r-selection}).
+The cut is applied to both samples and keeps 1\,862\,718 candidates in data and 302\,160 in simulation.
+The Gaussian fits of \cref{sec:r-gauss} use all candidates, and all later fits use the selected ones.
+The final fit in kinematic cells is further restricted to the fiducial region of the earlier LHCb measurement~\cite{LHCb:2013itw}, $2.0 < y < 4.5$ and $\pT < 15\,\GeVc$, which contains 1\,803\,404 selected candidates.
 
 \begin{figure}[!htbp]
     \centering
     \plot[\textwidth]{variables.png}
-    \caption{The six observables of the full 2015 sample before any selection: dimuon mass,
-    transverse momentum, pseudorapidity and momentum, and the transverse momenta of the two muons.}
+    \caption{Distributions of the six observables in the full 2015 sample, before selection.}
     \label{fig:variables}
 \end{figure}
 
@@ -195,9 +183,41 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
 %%        (start from a reference fit). Goodness of fit: Baker-Cousins chi2, runs test on the
 %%        residual signs; likelihood ratio (Wilks) for nested models, AIC/BIC otherwise;
 %%        pseudo-experiments for bias and error coverage (summary in Appendix).
-%% REFS:  Barlow:1990vc; Baker:1983tu; Cowan:1998ji.
+%% REFS:  Cowan:2024stat; wiki:runs; wiki:AIC; wiki:BIC.
 
-\todo{likelihood, minimisation, errors, goodness of fit, toys}
+All fits to data are extended binned maximum-likelihood fits with 250 bins across the fit window.
+The expected count in bin $i$ is
+\begin{equation}
+    \nu_i = \sum_k N_k \int_{\mathrm{bin}\,i} f_k(m)\,\mathrm{d}m ,
+\end{equation}
+where $N_k$ is the yield of component $k$ (the three peaks and the background) and $f_k$ its shape, normalised on the fit window.
+Floating the yields lets their errors include the Poisson fluctuation of the total number of events.
+The fit minimises
+\begin{equation}
+    -2\ln L = 2\sum_i \left[\nu_i - n_i + n_i \ln\frac{n_i}{\nu_i}\right],
+    \label{eq:nll}
+\end{equation}
+which equals the Poisson $-2\ln L$ for the observed counts $n_i$ up to a constant.
+The bins are much narrower than the peaks ($\sigma_{1S} \approx 43\,\MeVcc$), so binning loses almost no information (\cref{tab:bins}).
+The background-free simulation is fitted unbinned, since binned double Crystal Ball fits to it do not always converge.
+
+The likelihood is minimised with MIGRAD from MINUIT~\cite{James:1975dr}, through iminuit~\cite{dembinski2026iminuit}.
+Models with more parameters are less tightly constrained by the data, and their parameters can trade off against one another, so the minimiser may settle in a false minimum that it still reports as converged.
+We therefore accept a fit as valid only if MINUIT reports a converged minimum with an accurate covariance matrix and no parameter at a limit.
+A fit that fails these checks is restarted, after a SIMPLEX pass if needed.
+The simultaneous fit in kinematic cells starts from the result of a fit to all cells combined.
+
+Parameter errors are taken from HESSE.
+For the \Ups{1S} fit they are compared with MINOS and with scans of $-2\ln L$, where the 68\% interval is the range over which $-2\ln L$ stays within one unit of its minimum.
+The scans are made with the other parameters either re-minimised at each point (the profile likelihood) or fixed at their best-fit values~\cite{Cowan:2024stat}.
+
+Fit quality is judged by two complementary tests.
+The value of \cref{eq:nll} at the minimum is the Baker--Cousins $\chi^2$~\cite[Eq.~(40.16)]{Cowan:2024stat}, which for large expected counts follows a $\chi^2$ distribution with $250 - k$ degrees of freedom for $k$ free parameters.
+The $\chi^2$ ignores the order of the bins, so the signs of the residuals $n_i - \nu_i$ are also tested for runs~\cite{wiki:runs}.
+A model that fails in one region leaves long stretches of residuals with the same sign.
+Nested models are compared with the likelihood ratio, whose change in $-2\ln L$ follows a $\chi^2$ distribution with as many degrees of freedom as extra parameters~\cite{Cowan:2024stat}.
+Non-nested models are ranked by the Akaike and Bayesian information criteria~\cite{wiki:AIC,wiki:BIC}, $\mathrm{AIC} = -2\ln L + 2k$ and $\mathrm{BIC} = -2\ln L + k\ln N$, with $N$ the number of candidates.
+Finally, 500 pseudo-experiments generated from the baseline fit and refitted in the same way test the fitted masses for bias and their errors for coverage (\cref{tab:toys}).
 
 \subsection{Mass models}
 \label{sec:m-models}
@@ -208,7 +228,32 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
 %%        background slope per cell.
 %% REFS:  Skwarnicki:1986xj; LHCb:2013itw.
 
-\todo{signal and background shapes; shared and tied parameters; kinematic cells}
+The simplest signal model is a Gaussian, which would describe the peak if every candidate had the same resolution.
+Two effects break this.
+Radiated photons give each peak a low-mass tail, and the resolution varies with the muon kinematics, which makes the inclusive peak a blend of Gaussians of different widths.
+The Crystal Ball function addresses the first effect by joining a Gaussian core to a power-law tail at $\alpha$ standard deviations below the mean,
+\begin{equation}
+    f_\mathrm{CB}(m) \propto
+    \begin{cases}
+        \exp\!\left(-t^2/2\right), & t > -\alpha, \\[2pt]
+        \left(\dfrac{n}{\alpha}\right)^{\!n} e^{-\alpha^2/2} \left(\dfrac{n}{\alpha} - \alpha - t\right)^{\!-n}, & t \leq -\alpha,
+    \end{cases}
+    \qquad t = \frac{m - \mu}{\sigma},
+\end{equation}
+where $n$ sets how slowly the tail falls and the two pieces join smoothly at $t = -\alpha$.
+The baseline model, the double Crystal Ball, also addresses the second effect.
+It is the sum of two Crystal Balls with a common mean and tail, widths $\sigma$ and $r\sigma$ ($r > 1$), and a fraction $f$ in the narrower component.
+A double Gaussian, the same construction without the tail, is also tested.
+The background is an exponential, $e^{-c\,m}$, with a free slope $c$.
+
+The three-peak fit needs two constraints, because the \Ups{2S} and \Ups{3S} peaks are smaller, overlap, and sit on more background.
+The tail parameters ($\alpha$, $n$, and for the double Crystal Ball $r$ and $f$) are shared by all three peaks, since the radiation and the spread of relative resolutions are common to all three.
+The widths are tied to the \Ups{1S} width by the mass ratio, $\sigma_k = \sigma_{1S}\, m_k/m_{1S}$ with $m_k$ the PDG masses, following $\delta m/m \approx \delta p/p$.
+The fit then has three masses, one width, one tail shape, three signal yields, and the background yield and slope.
+
+Since the resolution depends on the kinematics, the final fit is a simultaneous fit in 12 cells of the fiducial region, three in rapidity (edges 2.0, 3.0, 3.5, 4.5) by four in \pT{} (edges 0, 3, 6, 10, 15\,\GeVc).
+The masses and the tail shape are common to all cells, while each cell has its own width, yields and background slope.
+The total $-2\ln L$ is the sum over the cells.
 
 % ================================================================ 3 RESULTS AND DISCUSSION
 \section{Results and discussion}
@@ -223,20 +268,24 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
 %% NUMBERS: 01_measure_masses.py --signal gauss --binned (fit_1S_gauss.json, fit_3peaks_gauss.json,
 %%        errors_1S_gauss.json).
 
-\begin{figure}[!htbp]
+We begin with a Gaussian \Ups{1S} peak on an exponential background, fitted to all candidates in 9.0--9.9\,\GeVcc{} (\cref{fig:fit-1s-gauss}).
+The fit gives $\mu_{1S} = 9455.90 \pm 0.10\,\MeVcc$ and $\sigma_{1S} = 43.25 \pm 0.10\,\MeVcc$ (\cref{tab:gauss-params}).
+The mass lies 4.5\,\MeVcc{} below the PDG value, far outside its statistical error, and this offset persists through every later fit.
+The pulls show where the Gaussian fails.
+Data exceed the fit by more than five standard deviations on the low-mass side of the peak, where radiated photons move candidates, and the core is sharper than a Gaussian with heavier wings on both sides.
+
+\begin{figure}[H]
     \centering
     \plot[0.5\textwidth]{fit_1S_gauss.png}
-    \caption{Single-Gaussian fit to the \Ups{1S} peak (9.0--9.9\,GeV/$c^2$, exponential
-    background), with the pulls per bin below.}
+    \caption{Gaussian fit to the \Ups{1S} peak in 9.0--9.9\,\GeVcc{}, with the pulls below.}
     \label{fig:fit-1s-gauss}
 \end{figure}
 
-\begin{table}[!htbp]
+\begin{table}[H]
     \centering
-    \caption{Parameters of the single-Gaussian fits to all events (binned, 250 bins) with an
-    exponential background $\propto e^{-c(m - m_\mathrm{lo})}$: the \Ups{1S} alone in
-    9.0--9.9\,\GeVcc{} and the three peaks in 9.0--11.0\,\GeVcc. Errors from HESSE. $N_\mathrm{bkg}$
-    counts the background in each fit window.}
+    \caption{Parameters of the Gaussian fits to all candidates, for the \Ups{1S} alone (9.0--9.9\,\GeVcc) and
+    the three peaks (9.0--11.0\,\GeVcc). Errors are from HESSE, and $N_\mathrm{bkg}$ is the background in
+    each fit window.}
     \label{tab:gauss-params}
     \begin{tabular}{lcc}
         \toprule
@@ -258,18 +307,16 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
     \end{tabular}
 \end{table}
 
-\begin{figure}[!htbp]
-    \centering
-    \plot[\textwidth]{error_scans_1S_gauss.png}
-    \caption{\todo{caption: profiled vs fixed scans, HESSE band, Delta = 1}}
-    \label{fig:error-scans}
-\end{figure}
+\Cref{tab:errors} compares four estimates of the statistical errors on $\mu_{1S}$ and $\sigma_{1S}$.
+HESSE, MINOS and the profiled scan agree to the third decimal place, so the likelihood is parabolic near its minimum and HESSE errors are used from here on.
+The scan with the other parameters fixed agrees for $\mu_{1S}$ but gives a 14\% smaller error on $\sigma_{1S}$ (\cref{fig:error-scans}).
+The width is correlated with the signal yield ($\rho = +0.48$), since a wider peak holds more events, and fixing the yield removes this freedom.
+The mass has no correlation above 0.09 with any parameter, so fixing the others leaves its error unchanged.
 
-\begin{table}[!htbp]
+\begin{table}[H]
     \centering
-    \caption{Statistical errors on the \Ups{1S} Gaussian fit parameters [\MeVcc], by four methods:
-    HESSE (curvature at the minimum), MINOS, the $\Delta(-2\ln L) = 1$ crossings of the profiled
-    scan and of the scan with the other parameters fixed.}
+    \caption{Statistical errors on the \Ups{1S} Gaussian fit parameters [\MeVcc] from HESSE, MINOS, and the
+    $\Delta(-2\ln L) = 1$ crossings of the profiled and fixed scans.}
     \label{tab:errors}
     \begin{tabular}{lcccc}
         \toprule
@@ -281,7 +328,19 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
     \end{tabular}
 \end{table}
 
-\todo{text}
+\begin{figure}[H]
+    \centering
+    \plot[\textwidth]{error_scans_1S_gauss.png}
+    \caption{Scans of $-2\ln L$ for $\mu_{1S}$ and $\sigma_{1S}$ in the \Ups{1S} Gaussian fit, with the other
+    parameters re-minimised (solid) or fixed at their best-fit values (dashed). The grey band is the
+    HESSE error, and each 68\% interval ends where its curve crosses $\Delta(-2\ln L) = 1$ (dotted).}
+    \label{fig:error-scans}
+\end{figure}
+
+Extending the window to 9.0--11.0\,\GeVcc{} adds Gaussians for the \Ups{2S} and \Ups{3S}, each with its own width (\cref{tab:gauss-params}).
+The \Ups{1S} parameters do not change.
+The \Ups{2S} and \Ups{3S} masses lie 4.5 and 4.8\,\MeVcc{} below their PDG values, close to the \Ups{1S} offset, and the widths grow with mass.
+The same three-peak fit on the selected data shows the pattern of pulls at every peak (\cref{fig:fit-3peaks}a), so the Gaussian fails for all three.
 
 \subsection{Extended signal models}
 \label{sec:r-shape}
@@ -292,14 +351,22 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
 %%        correlation, so the masses are unaffected by the over-parametrisation.
 %% NUMBERS: 02_signal_shape.py --binned (signal_shape.json).
 
-\begin{table}[!htbp]
+Task 5 replaces the Gaussian with the shapes of \cref{sec:m-models}.
+Each is first fitted to the simulation, where the mass is known and there is no background, so the fit sees the detector response alone.
+The double Crystal Ball describes the simulation best, lowering $-2\ln L$ by 8293 relative to the Crystal Ball and by 17\,294 relative to the double Gaussian, each for two extra parameters.
+Its simulated shape is a narrow core holding 91\% of the peak, a second component twice as wide, and a tail starting 1.9 standard deviations below the mean (\cref{tab:shape}).
+
+The shapes are then fitted to the three peaks in the selected data, with the tails shared and the widths tied (\cref{tab:comparison}).
+Each extension improves on the Gaussian, and the double Crystal Ball improves the most.
+Its $\chi^2/\mathrm{ndof}$ falls to 1.36 from 12.85 for the Gaussian, and AIC and BIC prefer it over every other model by more than 500.
+The structure the Gaussian leaves at each peak largely disappears from its pulls (\cref{fig:fit-3peaks}).
+
+\begin{table}[H]
     \centering
-    \caption{Three-peak fits to the selected data (250 bins) with each signal shape: free
-    parameters $k$, Baker--Cousins $\chi^2$, its $p$-value, the $p$-value of the runs test on the
-    signs of the residuals, AIC and BIC relative to the best model, and $\mu_{1S} - m_\mathrm{PDG}$
-    [\MeVcc] (statistical error, no bias correction). Tails are shared by the three peaks; for the double CB
-    with tails fixed to simulation, the likelihood ratio against free tails is
-    $-2\Delta\ln L = 586$ for 4 parameters. The shape parameters are compared in \cref{tab:shape}.}
+    \caption{Three-peak fits to the selected data with each signal shape, with the tails shared by the three
+    peaks. AIC and BIC are relative to the best model, and $\mu_{1S} - m_\mathrm{PDG}$ [\MeVcc] has no
+    bias correction. Fixing the double-CB tails to simulation raises $-2\ln L$ by 586 for 4 fewer
+    parameters. The shape parameters are compared in \cref{tab:shape}.}
     \label{tab:comparison}
     \small
     \setlength{\tabcolsep}{4pt}
@@ -307,16 +374,16 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
         \toprule
         Signal & $k$ & $\chi^2/\mathrm{ndof}$ & $p(\chi^2)$ & $p(\mathrm{runs})$ & $\Delta$AIC & $\Delta$BIC & $\mu_{1S} - m_\mathrm{PDG}$ \\
         \midrule
-        Gaussian & 11 & 3072/239 & $<10^{-300}$ & $3\times10^{-15}$ & 2745 & 2721 & $-4.47 \pm 0.09$ \\
-        Double Gaussian & 11 & 1038/239 & $6\times10^{-100}$ & $3\times10^{-9}$ & 712 & 687 & $-4.42 \pm 0.09$ \\
-        Crystal Ball & 11 & 971/239 & $7\times10^{-89}$ & $5\times10^{-9}$ & 645 & 620 & $-3.22 \pm 0.10$ \\
-        Double CB, simulation tails & 9 & 908/241 & $5\times10^{-78}$ & $8\times10^{-7}$ & 578 & 528 & $-4.08 \pm 0.09$ \\
-        Double CB & 13 & 322/237 & $2\times10^{-4}$ & $1\times10^{-3}$ & 0 & 0 & $-3.58 \pm 0.11$ \\
+        Gaussian & 11 & 3072/239 (12.85) & $<10^{-300}$ & $3\times10^{-15}$ & 2745 & 2721 & $-4.47 \pm 0.09$ \\
+        Double Gaussian & 11 & 1038/239 (4.34) & $6\times10^{-100}$ & $3\times10^{-9}$ & 712 & 687 & $-4.42 \pm 0.09$ \\
+        Crystal Ball & 11 & 971/239 (4.06) & $7\times10^{-89}$ & $5\times10^{-9}$ & 645 & 620 & $-3.22 \pm 0.10$ \\
+        Double CB, simulation tails & 9 & 908/241 (3.77) & $5\times10^{-78}$ & $8\times10^{-7}$ & 578 & 528 & $-4.08 \pm 0.09$ \\
+        Double CB & 13 & 322/237 (1.36) & $2\times10^{-4}$ & $1\times10^{-3}$ & 0 & 0 & $-3.58 \pm 0.11$ \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.49\textwidth}
         \centering
@@ -328,13 +395,48 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
         \plot[\linewidth]{shape_fit_double_cb.png}
         \caption{Double Crystal Ball signal (baseline).}
     \end{subfigure}
-    \caption{Three-peak fits to the selected data with an exponential background, with the pulls per bin below each fit.
-    The Gaussian leaves a structured pattern of pulls at every peak; the double Crystal Ball
-    (tails shared, widths tied) removes most of it (\cref{tab:comparison}).}
+    \caption{Three-peak fits to the selected data, with the pulls below. The double Crystal Ball removes most
+    of the structured pulls the Gaussian leaves at every peak (\cref{tab:comparison}).}
     \label{fig:fit-3peaks}
 \end{figure}
 
-\todo{text}
+Fixing the double Crystal Ball tails to their simulated values raises $-2\ln L$ by 586 for four parameters, so the simulation does not describe the tails of the data.
+\Cref{tab:shape} shows the difference.
+In data the narrow component holds only 62\% of the peak, and the tail starts closer to the core ($\alpha = 1.52$ against 1.93) but falls faster ($n = 3.8$ against 1.1).
+This suggests that the simulation does not reproduce the full spread of resolutions in data, and on data the tail also competes with the background beneath it.
+The tails are therefore left free in all later fits.
+
+\begin{table}[H]
+    \centering
+    \caption{Double-CB shape parameters from simulation (unbinned), from the inclusive three-peak fit to data,
+    and from the simultaneous fit in kinematic cells (\cref{sec:r-selection}). In the cell fit the narrow fraction is correlated with
+    every cell's width ($+0.85$ to $+0.96$) and with the width ratio ($+0.92$), and $\alpha$ with
+    $n$ ($-0.91$). No mass has a correlation above 0.5 with any parameter.}
+    \label{tab:shape}
+    \begin{tabular}{lccc}
+        \toprule
+        & Simulation & Data, inclusive & Data, 12 cells \\
+        \midrule
+        $\sigma_{1S}$ [\MeVcc] & $34.3 \pm 0.1$ & $35.9 \pm 0.6$ & per cell (\cref{tab:cells}) \\
+        $\alpha$ & $1.93 \pm 0.01$ & $1.52 \pm 0.04$ & $1.60 \pm 0.04$ \\
+        $n$ & $1.08 \pm 0.02$ & $3.78 \pm 0.62$ & $3.66 \pm 0.58$ \\
+        Width ratio $r$ & $2.16 \pm 0.03$ & $1.69 \pm 0.03$ & $1.52 \pm 0.06$ \\
+        Narrow fraction $f$ & $0.907 \pm 0.005$ & $0.622 \pm 0.038$ & $0.730 \pm 0.068$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+The double Crystal Ball is still not a perfect description, with $p(\chi^2) = 2\times10^{-4}$ and $p(\mathrm{runs}) = 10^{-3}$.
+With 1.9 million candidates, small differences in shape become significant.
+It remains the baseline as the best of the tested models on every criterion, and the shift from replacing it with a single Crystal Ball enters the systematic uncertainty (\cref{sec:r-final}).
+
+The shape matters for the mass.
+Across the five models of \cref{tab:comparison}, $\mu_{1S}$ moves by up to 1.25\,\MeVcc{}, more than ten times its statistical error (\cref{app:shape}).
+Part of this is a bias of the shape itself, which the simulation measures directly.
+The double Crystal Ball fitted to simulation returns a peak $0.78 \pm 0.08\,\MeVcc$ above the generated mass, and \cref{sec:r-final} subtracts this bias.
+The extra shape parameters are strongly correlated with one another.
+The narrow fraction trades off against each width and the width ratio, and $\alpha$ against $n$, since each pair describes the same feature of the peak in two ways (\cref{tab:shape}).
+No mass is correlated above 0.5 with any parameter, so this freedom does not reach the masses, and pseudo-experiments find them unbiased with correctly estimated errors (\cref{app:toys}).
 
 \subsection{Kinematic selection and binning}
 \label{sec:r-selection}
@@ -344,16 +446,23 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
 %%        per-cell chi2 (worst cell in Appendix).
 %% NUMBERS: 03_selection.py (selection.json); 04_kinematic_bins.py (kinematic_bins_*.json).
 
-\begin{figure}[!htbp]
+\Cref{fig:vs-mass} shows four observables against mass.
+The three peaks appear as vertical bands in each, above a background that spans the full mass range.
+Task 6 asks whether a cut on one of these variables improves the purity.
+A first estimate needs no fit.
+The background under the \Ups{1S} window (9.36--9.56\,\GeVcc{}) is estimated from the sidebands on either side, and the purity is followed as each cut is tightened (\cref{fig:sideband}).
+Only the soft muon \pT{} separates signal from background well.
+A cut at 3\,\GeVc{} raises the purity from 0.50 to 0.73 while keeping 77\% of the signal, whereas a dimuon \pT{} cut reaches 0.61 only after removing 77\% of the signal, and the pseudorapidity does not help.
+
+\begin{figure}[H]
     \centering
     \plot[0.9\textwidth]{variables_vs_mass.png}
-    \caption{Dimuon pseudorapidity $\eta$, momentum $p$ and transverse momentum \pT{}, and the
-    transverse momentum $p_{\mathrm{T},1}$ of the first muon of the pair, each against dimuon mass, before any selection. The \Ups{nS} peaks
-    appear as vertical bands above the combinatorial background.}
+    \caption{Four observables against dimuon mass, before selection. The \Ups{nS} peaks appear as vertical bands
+    above the combinatorial background.}
     \label{fig:vs-mass}
 \end{figure}
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.49\textwidth}
         \centering
@@ -367,14 +476,18 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
         \caption{Signal purity against the soft muon \pT{} cut.}
         \label{fig:purity}
     \end{subfigure}
-    \caption{(a) Purity in the \Ups{1S} window (9.36--9.56\,\GeVcc) against the fraction of
-    \Ups{1S} signal kept, for cuts on three variables, with the background estimated from the
-    sidebands 9.0--9.2 and 9.7--9.9\,\GeVcc{} (no fit). (b) Purity $S/(S+B)$ within $\mu \pm 2\sigma$
-    of each peak from three-peak double-CB fits, for each cut on the soft muon \pT.}
+    \caption{(a) Purity in the \Ups{1S} window (9.36--9.56\,\GeVcc) against the fraction of signal kept,
+    for cuts on three variables, with the background estimated from the sidebands 9.0--9.2 and
+    9.7--9.9\,\GeVcc. (b) Purity within $\mu \pm 2\sigma$ of each peak from three-peak double-CB fits.}
     \label{fig:selection-purity}
 \end{figure}
 
-\begin{figure}[!htbp]
+The cut value is then chosen from fits.
+For each soft muon \pT{} cut, the three-peak double Crystal Ball fit gives the purity within $\mu \pm 2\sigma$ of each peak (\cref{fig:purity}), the significance $S/\sqrt{S+B}$, and the statistical error on each mass (\cref{fig:selection-merit}).
+The purity rises steadily with the cut, but the significance and the mass errors reach their optimum between 2.25 and 3.5\,\GeVc{}, beyond which the loss of signal dominates.
+At 3\,\GeVc{} the purities are 0.78, 0.51 and 0.37 for the three peaks, and each mass error lies within 2\% of its minimum, so we adopt this cut.
+
+\begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.49\textwidth}
         \centering
@@ -388,40 +501,48 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
         \caption{Statistical uncertainty on the masses.}
         \label{fig:stat-error}
     \end{subfigure}
-    \caption{Figures of merit from the same fits, relative to no cut, against the soft muon \pT{}
-    cut: (a) $S/\sqrt{S+B}$ within $\mu \pm 2\sigma$; (b) the HESSE error on each fitted mass.}
+    \caption{Significance $S/\sqrt{S+B}$ within $\mu \pm 2\sigma$ (a) and statistical error on each mass
+    (b), relative to no cut, from the fits of \cref{fig:purity}.}
     \label{fig:selection-merit}
 \end{figure}
 
-\begin{table}[!htbp]
+Task 7 divides the selected data in the fiducial region into the 12 $(y, \pT)$ cells of \cref{sec:m-models} and fits them simultaneously.
+The fitted \Ups{1S} width doubles across the cells, from 32\,\MeVcc{} at low rapidity and \pT{} to 64\,\MeVcc{} at high rapidity and \pT{} (\cref{fig:sigma-map}).
+This is the dependence anticipated in \cref{sec:intro}, as muons at higher rapidity and \pT{} carry more momentum and bend less in the magnet.
+The inclusive fit averages over this range, which is why it needs a second, wider component.
+
+\begin{figure}[H]
     \centering
-    \caption{Fitted masses minus PDG [\MeVcc] with statistical errors, for one inclusive fit and
-    the simultaneous fit in 12 $(y, \pT)$ cells, in the fiducial region. $\chi^2$ is the
-    Baker--Cousins statistic summed over all bins. No shape-bias correction is applied here.}
+    \plot[0.6\textwidth]{kinematic_bins_sigma_double_cb.png}
+    \caption{\Ups{1S} width in each $(y, \pT)$ cell of the simultaneous fit, with the inclusive fit dashed.
+    The narrow fraction, shared by all cells, is strongly correlated with each cell's width, so the
+    pattern across cells is better determined than the absolute values.}
+    \label{fig:sigma-map}
+\end{figure}
+
+Fitting in cells improves the description (\cref{tab:kinematic}).
+The $\chi^2/\mathrm{ndof}$ falls from 1.32 to 1.19 for the double Crystal Ball and from 3.60 to 1.25 for the Crystal Ball, which gains most because each cell holds a narrower range of resolutions.
+The double Crystal Ball masses move by at most 0.13\,\MeVcc{}, within their statistical errors, and the two shapes agree more closely in cells than inclusively.
+Most cells have $\chi^2/\mathrm{ndof}$ between 0.97 and 1.28 (\cref{tab:cells}).
+The exception is the cell at $2.0 < y < 3.0$ and $3 < \pT < 6\,\GeVc$, at 1.88, where the pulls follow a smooth curve across the window that points to the background shape rather than the signal (\cref{app:cells}).
+
+\begin{table}[H]
+    \centering
+    \caption{Fitted masses minus PDG [\MeVcc] in the fiducial region, from one inclusive fit and from the
+    simultaneous fit in 12 $(y, \pT)$ cells, without shape-bias correction. $\chi^2$ is summed over
+    all bins.}
     \label{tab:kinematic}
     \begin{tabular}{llcccc}
         \toprule
         Signal & Fit & $\chi^2/\mathrm{ndof}$ & \Ups{1S} & \Ups{2S} & \Ups{3S} \\
         \midrule
-        Crystal Ball & inclusive & 860/239 & $-3.22 \pm 0.11$ & $-3.68 \pm 0.27$ & $-4.00 \pm 0.47$ \\
-        & 12 cells & 3666/2923 & $-3.38 \pm 0.10$ & $-3.86 \pm 0.25$ & $-4.25 \pm 0.44$ \\
-        Double CB & inclusive & 312/237 & $-3.56 \pm 0.11$ & $-3.96 \pm 0.27$ & $-4.18 \pm 0.47$ \\
-        & 12 cells & 3470/2921 & $-3.60 \pm 0.10$ & $-4.06 \pm 0.25$ & $-4.31 \pm 0.43$ \\
+        Crystal Ball & inclusive & 860/239 (3.60) & $-3.22 \pm 0.11$ & $-3.68 \pm 0.27$ & $-4.00 \pm 0.47$ \\
+        & 12 cells & 3666/2923 (1.25) & $-3.38 \pm 0.10$ & $-3.86 \pm 0.25$ & $-4.25 \pm 0.44$ \\
+        Double CB & inclusive & 312/237 (1.32) & $-3.56 \pm 0.11$ & $-3.96 \pm 0.27$ & $-4.18 \pm 0.47$ \\
+        & 12 cells & 3470/2921 (1.19) & $-3.60 \pm 0.10$ & $-4.06 \pm 0.25$ & $-4.31 \pm 0.43$ \\
         \bottomrule
     \end{tabular}
 \end{table}
-
-\begin{figure}[!htbp]
-    \centering
-    \plot[0.6\textwidth]{kinematic_bins_sigma_double_cb.png}
-    \caption{\Ups{1S} width per $(y, \pT)$ cell from the simultaneous double-CB fit, against the
-    \pT{} bin centre, one line per rapidity bin; the dashed line is the inclusive fit. The narrow
-    fraction shared by all cells is strongly correlated with every cell's width, so the pattern
-    across cells is better determined than the absolute values.}
-    \label{fig:sigma-map}
-\end{figure}
-
-\todo{text}
 
 \subsection{Systematic uncertainties and final masses}
 \label{sec:r-final}
@@ -433,22 +554,16 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
 %% NUMBERS: 05_momentum_scale.py (momentum_scale.json); 06_final_masses.py (final_masses.json).
 %% REFS:  LHCb:2023ood; ParticleDataGroup:2024cfk.
 
-\begin{figure}[!htbp]
-    \centering
-    \plot[0.9\textwidth]{momentum_scale.png}
-    \caption{Top: \Ups{1S} peak position relative to its known mass, $\alpha_\mathrm{eff} = \mu/m - 1$,
-    in bins of dimuon momentum $p$ (left) and of the softer muon's \pT{} (right), for data and
-    simulation. Bottom: data minus simulation with a constant fit; the band is the
-    $\pm3\times10^{-4}$ uncertainty of the LHCb momentum-scale calibration~\cite{LHCb:2023ood},
-    set from the observed variation of $\alpha$ across decay modes and kinematics.}
-    \label{fig:momentum-scale}
-\end{figure}
+The baseline measurement is the simultaneous double Crystal Ball fit in cells, with each mass corrected for the shape bias found on simulation.
+The bias is scaled to each peak by the ratio of its width to the simulated width before it is subtracted.
+\Cref{tab:systematics} lists the uncertainties.
+The statistical error includes the error on the simulated bias.
 
-\begin{table}[!htbp]
+\begin{table}[H]
     \centering
-    \caption{Uncertainties on the masses [\MeVcc]. Each fit-model row is the shift of the
-    bias-corrected masses when one choice of the baseline fit is changed; a change of signal shape
-    or selection is corrected with its own simulation fit.}
+    \caption{Uncertainties on the masses [\MeVcc]. Each fit-model row is the shift of the bias-corrected
+    masses when one baseline choice is changed, with the bias recomputed from simulation for each
+    signal shape and selection.}
     \label{tab:systematics}
     \begin{tabular}{lccc}
         \toprule
@@ -467,12 +582,43 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
     \end{tabular}
 \end{table}
 
-\begin{table}[!htbp]
+The fit-model uncertainty comes from four variations, each a refit with one change from the baseline.
+These are a single Crystal Ball signal, soft muon cuts at 2.5 and 3.5\,\GeVc{}, and an inclusive fit without cells.
+Each variation is corrected with its own simulated bias, so the shifts measure how the corrected masses depend on the analysis choice.
+They are added in quadrature, giving 0.19, 0.25 and 0.71\,\MeVcc{}.
+The largest single shift, $-0.59\,\MeVcc$ for the \Ups{3S} at the tighter cut, is comparable to its statistical error, so part of it may be a statistical fluctuation.
+
+The momentum scale dominates the uncertainty.
+\Cref{fig:momentum-scale} tests whether it varies with the kinematics by fitting the \Ups{1S} peak position in six bins of dimuon momentum and of soft muon \pT{}, in data and in simulation.
+The simulation has a perfect momentum scale, so the difference between the two separates the detector effect from the shape bias.
+In both variables the difference sits near $-4.5\times10^{-4}$, a common offset in the scale.
+Against soft muon \pT{} it is flat ($\chi^2/\mathrm{ndof} = 5.9/5$).
+Against momentum it varies more than the statistical errors allow ($66.9/5$), but its spread of $2.6\times10^{-4}$ stays within the $3\times10^{-4}$ calibration uncertainty of LHCb~\cite{LHCb:2023ood}.
+We therefore assign the full $3\times10^{-4}$ to each mass, or about 3\,\MeVcc{}.
+
+\begin{figure}[H]
     \centering
-    \caption{Measured masses [\MeVcc]: value $\pm$ stat.\ $\pm$ fit model $\pm$ momentum scale, and
-    the difference from PDG~\cite{ParticleDataGroup:2024cfk}. Below the line, the cross-checks of
-    the momentum scale: the \Ups{2S} and \Ups{3S} masses with the scale calibrated on the \Ups{1S}
-    (stat.\ only), and one scale factor fitted to all three peaks.}
+    \plot[0.9\textwidth]{momentum_scale.png}
+    \caption{Top: \Ups{1S} peak position, $\alpha_\mathrm{eff} = \mu/m - 1$, in bins of dimuon momentum
+    (left) and soft muon \pT{} (right), for data and simulation. Bottom: data minus simulation with a
+    constant fit. The band is the $\pm3\times10^{-4}$ LHCb momentum-scale
+    uncertainty~\cite{LHCb:2023ood}.}
+    \label{fig:momentum-scale}
+\end{figure}
+
+\Cref{tab:final} gives the final masses.
+All three lie below their PDG values, by 4.45, 4.96 and 5.24\,\MeVcc{}, and the offsets grow with mass.
+A single scale factor fitted to the three peaks describes them well, with $s - 1 = (-4.75 \pm 0.14)\times10^{-4}$ and $\chi^2/\mathrm{ndof} = 1.44/2$.
+Calibrating the scale on the \Ups{1S} instead brings the \Ups{2S} and \Ups{3S} masses to within one standard deviation of their PDG values.
+The offsets are therefore one momentum-scale error, not a fault in the peak model.
+At $-4.75\times10^{-4}$ it is larger than the uncertainty LHCb quotes for its calibrated scale, which suggests these data were not processed with the final momentum calibration.
+
+\begin{table}[H]
+    \centering
+    \caption{Measured masses [\MeVcc] with statistical, fit-model and momentum-scale uncertainties, and their
+    difference from PDG~\cite{ParticleDataGroup:2024cfk}. Below the line are the momentum-scale
+    cross-checks, the \Ups{2S} and \Ups{3S} masses calibrated on the \Ups{1S} (statistical errors
+    only) and a common scale factor fitted to all three peaks.}
     \label{tab:final}
     \begin{tabular}{lcc}
         \toprule
@@ -488,8 +634,6 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
         \bottomrule
     \end{tabular}
 \end{table}
-
-\todo{text}
 
 % ================================================================ 4 CONCLUSION
 \section{Conclusion}
@@ -515,84 +659,20 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
 % ================================================================ APPENDICES
 \appendix
 
-\section{Fit results}
+\section{Supplementary fit results}
 \label{app:fits}
-%% SCOPE: full parameter tables of the baseline fits (data and simulation) and the per-cell table
-%%        of the kinematic fit; the toy pull figure if it does not fit in Sec. 4.
-%% NUMBERS: signal_shape.json, kinematic_bins_double_cb.json, toys.json, bin_width_scan_gauss.json.
+%% SCOPE: supporting tables and figures, in the order of Sec. 3.
+%% NUMBERS: bin_width_scan_gauss.json, signal_shape.json, kinematic_bins_double_cb.json, toys.json.
 
-\begin{table}[!htbp]
-    \centering
-    \small
-    \caption{The simultaneous double-CB fit per $(y, \pT)$ cell: selected candidates, fitted
-    \Ups{1S} and \Ups{3S} yields, \Ups{1S} width, and the Baker--Cousins $\chi^2$ over the cell's
-    250 bins (7--8 free parameters per cell plus the shared ones).}
-    \label{tab:cells}
-    \begin{tabular}{ccccccc}
-        \toprule
-        $y$ & \pT{} [GeV/$c$] & Candidates & $N_{1S}$ & $N_{3S}$ & $\sigma_{1S}$ [\MeVcc] & $\chi^2$ \\
-        \midrule
-        $2.0$--$3.0$ & $0$--$3$ & 335\,884 & 60\,812 & 5\,787 & $32.2 \pm 0.7$ & 273 \\
-        $2.0$--$3.0$ & $3$--$6$ & 318\,742 & 66\,437 & 8\,854 & $33.0 \pm 0.7$ & 458 \\
-        $2.0$--$3.0$ & $6$--$10$ & 138\,951 & 38\,235 & 5\,717 & $33.7 \pm 0.7$ & 309 \\
-        $2.0$--$3.0$ & $10$--$15$ & 50\,383 & 18\,709 & 3\,499 & $35.8 \pm 0.8$ & 236 \\
-        $3.0$--$3.5$ & $0$--$3$ & 225\,397 & 40\,375 & 4\,106 & $36.6 \pm 0.8$ & 242 \\
-        $3.0$--$3.5$ & $3$--$6$ & 189\,646 & 40\,088 & 5\,381 & $37.1 \pm 0.8$ & 275 \\
-        $3.0$--$3.5$ & $6$--$10$ & 110\,624 & 24\,586 & 3\,699 & $39.2 \pm 0.9$ & 249 \\
-        $3.0$--$3.5$ & $10$--$15$ & 29\,649 & 11\,050 & 2\,172 & $41.9 \pm 0.9$ & 273 \\
-        $3.5$--$4.5$ & $0$--$3$ & 163\,834 & 42\,671 & 4\,437 & $48.4 \pm 1.0$ & 299 \\
-        $3.5$--$4.5$ & $3$--$6$ & 143\,537 & 43\,290 & 5\,496 & $50.2 \pm 1.0$ & 312 \\
-        $3.5$--$4.5$ & $6$--$10$ & 72\,832 & 22\,749 & 3\,486 & $53.9 \pm 1.2$ & 269 \\
-        $3.5$--$4.5$ & $10$--$15$ & 23\,925 & 10\,005 & 1\,951 & $64.4 \pm 1.5$ & 275 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+\subsection{Gaussian fits}
+\label{app:gauss}
+\Cref{tab:bins} tests the bin width of the binned likelihood on the \Ups{1S} Gaussian fit.
 
-\begin{table}[!htbp]
+\begin{table}[!h]
     \centering
-    \caption{Double-CB shape parameters on simulation (pure \Ups{1S}, unbinned), on data (one
-    inclusive three-peak fit, tails shared) and in the simultaneous fit in cells. In the cell fit
-    the narrow fraction is correlated with every cell's width ($+0.85$ to $+0.96$) and with the
-    width ratio ($+0.92$), and $\alpha$ with $n$ ($-0.91$); no mass has a correlation above 0.5
-    with any parameter.}
-    \label{tab:shape}
-    \begin{tabular}{lccc}
-        \toprule
-        & Simulation & Data, inclusive & Data, 12 cells \\
-        \midrule
-        $\sigma_{1S}$ [\MeVcc] & $34.3 \pm 0.1$ & $35.9 \pm 0.6$ & per cell (\cref{tab:cells}) \\
-        $\alpha$ & $1.93 \pm 0.01$ & $1.52 \pm 0.04$ & $1.60 \pm 0.04$ \\
-        $n$ & $1.08 \pm 0.02$ & $3.78 \pm 0.62$ & $3.66 \pm 0.58$ \\
-        Width ratio $r$ & $2.16 \pm 0.03$ & $1.69 \pm 0.03$ & $1.52 \pm 0.06$ \\
-        Narrow fraction $f$ & $0.907 \pm 0.005$ & $0.622 \pm 0.038$ & $0.730 \pm 0.068$ \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\begin{table}[!htbp]
-    \centering
-    \caption{Pseudo-experiments: 500 binned toys generated from the inclusive double-CB fit to
-    the selected data and refitted (none failed). Pull $= (\hat\theta - \theta_\mathrm{true})/\hat\sigma$;
-    the bias is the mean of $\hat\theta - \theta_\mathrm{true}$ [\MeVcc]; KS is the $p$-value of a
-    Kolmogorov--Smirnov test of the pulls against a unit Gaussian.}
-    \label{tab:toys}
-    \begin{tabular}{lcccc}
-        \toprule
-        & Pull mean & Pull width & Bias & KS $p$ \\
-        \midrule
-        $\mu_{1S}$ & $-0.04 \pm 0.05$ & $1.014 \pm 0.032$ & $-0.005$ & 0.50 \\
-        $\mu_{2S}$ & $-0.02 \pm 0.04$ & $0.990 \pm 0.031$ & $-0.004$ & 0.41 \\
-        $\mu_{3S}$ & $+0.04 \pm 0.04$ & $0.984 \pm 0.031$ & $+0.017$ & 0.80 \\
-        $\sigma_{1S}$ & $+0.10 \pm 0.04$ & $1.002 \pm 0.032$ & $+0.050$ & 0.23 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-\begin{table}[!htbp]
-    \centering
-    \caption{Bin width of the binned likelihood: the \Ups{1S} Gaussian fit (window 9.0--9.9\,GeV/$c^2$,
-    $\sigma_{1S} = 43.3$\,\MeVcc) refitted with bins from 2 to 64\,MeV, compared with the unbinned fit
-    (statistical error 0.0999\,\MeVcc). The three-peak fits use 8\,MeV bins.}
+    \caption{The \Ups{1S} Gaussian fit ($\sigma_{1S} = 43.3$\,\MeVcc) refitted with bin widths from 2 to
+    64\,MeV, compared with the unbinned fit (statistical error 0.0999\,\MeVcc). The three-peak fits
+    use 8\,MeV bins.}
     \label{tab:bins}
     \begin{tabular}{ccccc}
         \toprule
@@ -608,39 +688,97 @@ Our dataset is accompanied by a simulated Monte Carlo sample of the \Ups{1S} mes
     \end{tabular}
 \end{table}
 
-\begin{figure}[!htbp]
+\subsection{Signal models}
+\label{app:shape}
+\Cref{fig:profile} shows the profile likelihood of $\mu_{1S}$ for each signal model of \cref{tab:comparison}.
+
+\begin{figure}[!h]
     \centering
     \plot[0.75\textwidth]{profile_mu_1S.png}
-    \caption{Profile likelihood of $\mu_{1S}$ for the three-peak fit with each signal shape. The
-    choice of shape moves the fitted mass by up to 1.25\,\MeVcc, far more than each curve's
-    statistical width ($\Delta(-2\ln L) = 1$, dotted).}
+    \caption{Profile likelihood of $\mu_{1S}$ in the three-peak fit for each signal shape. The choice of
+    shape moves the mass by up to 1.25\,\MeVcc, far more than the statistical width of each curve.}
     \label{fig:profile}
 \end{figure}
 
-\begin{figure}[!htbp]
+\clearpage
+\subsection{Kinematic cells}
+\label{app:cells}
+\Cref{tab:cells} lists the simultaneous fit cell by cell, and \cref{fig:worst-cell} shows the cell with the largest $\chi^2$.
+
+\begin{table}[!h]
+    \centering
+    \small
+    \caption{The simultaneous double-CB fit in each $(y, \pT)$ cell. $\chi^2$ is over the cell's 250 bins,
+    with 6 free parameters per cell and 7 shared by all cells. The ratio uses 244 degrees of freedom per cell,
+    leaving the shared parameters out.}
+    \label{tab:cells}
+    \begin{tabular}{ccccccc}
+        \toprule
+        $y$ & \pT{} [GeV/$c$] & Candidates & $N_{1S}$ & $N_{3S}$ & $\sigma_{1S}$ [\MeVcc] & $\chi^2$ (/244) \\
+        \midrule
+        $2.0$--$3.0$ & $0$--$3$ & 335\,884 & 60\,812 & 5\,787 & $32.2 \pm 0.7$ & 273 (1.12) \\
+        $2.0$--$3.0$ & $3$--$6$ & 318\,742 & 66\,437 & 8\,854 & $33.0 \pm 0.7$ & 458 (1.88) \\
+        $2.0$--$3.0$ & $6$--$10$ & 138\,951 & 38\,235 & 5\,717 & $33.7 \pm 0.7$ & 309 (1.26) \\
+        $2.0$--$3.0$ & $10$--$15$ & 50\,383 & 18\,709 & 3\,499 & $35.8 \pm 0.8$ & 236 (0.97) \\
+        $3.0$--$3.5$ & $0$--$3$ & 225\,397 & 40\,375 & 4\,106 & $36.6 \pm 0.8$ & 242 (0.99) \\
+        $3.0$--$3.5$ & $3$--$6$ & 189\,646 & 40\,088 & 5\,381 & $37.1 \pm 0.8$ & 275 (1.13) \\
+        $3.0$--$3.5$ & $6$--$10$ & 110\,624 & 24\,586 & 3\,699 & $39.2 \pm 0.9$ & 249 (1.02) \\
+        $3.0$--$3.5$ & $10$--$15$ & 29\,649 & 11\,050 & 2\,172 & $41.9 \pm 0.9$ & 273 (1.12) \\
+        $3.5$--$4.5$ & $0$--$3$ & 163\,834 & 42\,671 & 4\,437 & $48.4 \pm 1.0$ & 299 (1.23) \\
+        $3.5$--$4.5$ & $3$--$6$ & 143\,537 & 43\,290 & 5\,496 & $50.2 \pm 1.0$ & 312 (1.28) \\
+        $3.5$--$4.5$ & $6$--$10$ & 72\,832 & 22\,749 & 3\,486 & $53.9 \pm 1.2$ & 269 (1.10) \\
+        $3.5$--$4.5$ & $10$--$15$ & 23\,925 & 10\,005 & 1\,951 & $64.4 \pm 1.5$ & 275 (1.13) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[!h]
     \centering
     \plot[0.5\textwidth]{kinematic_bins_worst_cell_double_cb.png}
-    \caption{The cell of the simultaneous fit with the largest $\chi^2$ (458 for 250 bins): the
-    pulls follow a smooth curve across the window, pointing at the background shape rather than
-    the signal.}
+    \caption{The cell with the largest $\chi^2$ (458 for 250 bins). The pulls follow a smooth curve across
+    the window, which points to the background shape rather than the signal.}
     \label{fig:worst-cell}
 \end{figure}
 
-\begin{figure}[!htbp]
+\clearpage
+\subsection{Fit validation}
+\label{app:toys}
+\Cref{tab:toys,fig:toys} summarise the pseudo-experiments of \cref{sec:m-fits}.
+
+\begin{table}[!h]
+    \centering
+    \caption{500 binned pseudo-experiments generated from the inclusive double-CB fit to the selected data
+    and refitted, none of which failed. The pull is $(\hat\theta - \theta_\mathrm{true})/\hat\sigma$,
+    the bias is the mean of $\hat\theta - \theta_\mathrm{true}$ [\MeVcc], and KS is the $p$-value of
+    a Kolmogorov--Smirnov test of the pulls against a unit Gaussian.}
+    \label{tab:toys}
+    \begin{tabular}{lcccc}
+        \toprule
+        & Pull mean & Pull width & Bias & KS $p$ \\
+        \midrule
+        $\mu_{1S}$ & $-0.04 \pm 0.05$ & $1.014 \pm 0.032$ & $-0.005$ & 0.50 \\
+        $\mu_{2S}$ & $-0.02 \pm 0.04$ & $0.990 \pm 0.031$ & $-0.004$ & 0.41 \\
+        $\mu_{3S}$ & $+0.04 \pm 0.04$ & $0.984 \pm 0.031$ & $+0.017$ & 0.80 \\
+        $\sigma_{1S}$ & $+0.10 \pm 0.04$ & $1.002 \pm 0.032$ & $+0.050$ & 0.23 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[!h]
     \centering
     \plot[0.8\textwidth]{toy_pulls.png}
-    \caption{Pulls of the three masses and $\sigma_{1S}$ in 500 pseudo-experiments generated from
-    the inclusive double-CB fit (summary in \cref{tab:toys}), with a Gaussian fit (red) and the unit
-    Gaussian (dashed).}
+    \caption{Pulls of the three masses and $\sigma_{1S}$ in the pseudo-experiments of \cref{tab:toys}, with a
+    Gaussian fit (red) and the unit Gaussian (dashed).}
     \label{fig:toys}
 \end{figure}
 
+\clearpage
 \section{Software and reproducibility}
 \label{app:software}
 %% SCOPE: half a page. The upsilon package (models, fitting, comparison) and the numbered scripts,
 %%        one per study; Python and package versions (numpy, scipy, iminuit 2.33.0, particle
 %%        1.1.1, mplhep); every figure and number regenerated with --dataset full.
-%% REFS:  dembinski2025iminuit; rodrigues2025particle.
+%% REFS:  dembinski2026iminuit; rodrigues2026particle.
 
 \begin{table}[!htbp]
     \centering
