@@ -90,12 +90,36 @@
 % 3  STATISTICS AND FIT MODELS
 % ======================================================================
 
-@phdthesis{Skwarnicki:1986xj,
-  author        = {Skwarnicki, T.},
-  title         = {A study of the radiative {CASCADE} transitions between the {Upsilon-Prime} and {Upsilon} resonances},
-  school        = {Institute of Nuclear Physics, Cracow},
-  year          = {1986},
-  note          = {DESY-F31-86-02}
+@article{Cowan:2024stat,
+  author        = {Cowan, G.},
+  title         = {Statistics},
+  journal       = {Phys. Rev. D},
+  volume        = {110},
+  pages         = {030001},
+  year          = {2024},
+  note          = {Chapter 40 of S. Navas et al. ({Particle Data Group}), Review of Particle Physics; revised August 2023},
+  url           = {https://pdg.lbl.gov/2024/reviews/rpp2024-rev-statistics.pdf}
+}
+
+@online{wiki:AIC,
+  title         = {{Akaike} information criterion},
+  organization  = {Wikipedia},
+  url           = {https://en.wikipedia.org/wiki/Akaike_information_criterion},
+  urldate       = {2026-11-26}
+}
+
+@online{wiki:BIC,
+  title         = {{Bayesian} information criterion},
+  organization  = {Wikipedia},
+  url           = {https://en.wikipedia.org/wiki/Bayesian_information_criterion},
+  urldate       = {2026-11-26}
+}
+
+@online{wiki:runs,
+  title         = {{Wald--Wolfowitz} runs test},
+  organization  = {Wikipedia},
+  url           = {https://en.wikipedia.org/wiki/Wald%E2%80%93Wolfowitz_runs_test},
+  urldate       = {2026-11-26}
 }
 
 @article{Barlow:1990vc,
@@ -106,78 +130,6 @@
   pages         = {496--506},
   year          = {1990},
   doi           = {10.1016/0168-9002(90)91334-8}
-}
-
-@article{Baker:1983tu,
-  author        = {Baker, S. and Cousins, R. D.},
-  title         = {Clarification of the use of chi-square and likelihood functions in fits to histograms},
-  journal       = {Nucl. Instrum. Meth.},
-  volume        = {221},
-  pages         = {437--442},
-  year          = {1984},
-  doi           = {10.1016/0167-5087(84)90016-4}
-}
-
-@book{Cowan:1998ji,
-  author        = {Cowan, G.},
-  title         = {Statistical Data Analysis},
-  publisher     = {Oxford University Press},
-  year          = {1998},
-  isbn          = {978-0-19-850156-5}
-}
-
-@inproceedings{Barlow:2002yb,
-  author        = {Barlow, R.},
-  title         = {Systematic errors: facts and fictions},
-  booktitle     = {Conference on Advanced Statistical Techniques in Particle Physics},
-  pages         = {134--144},
-  year          = {2002},
-  eprint        = {hep-ex/0207026},
-  archiveprefix = {arXiv}
-}
-
-@article{wilks1938large,
-  author        = {Wilks, S. S.},
-  title         = {The large-sample distribution of the likelihood ratio for testing composite hypotheses},
-  journal       = {Ann. Math. Stat.},
-  volume        = {9},
-  number        = {1},
-  pages         = {60--62},
-  year          = {1938},
-  doi           = {10.1214/aoms/1177732360}
-}
-
-@article{wald1940runs,
-  author        = {Wald, A. and Wolfowitz, J.},
-  title         = {On a test whether two samples are from the same population},
-  journal       = {Ann. Math. Stat.},
-  volume        = {11},
-  number        = {2},
-  pages         = {147--162},
-  year          = {1940},
-  doi           = {10.1214/aoms/1177731909}
-}
-
-@article{akaike1974new,
-  author        = {Akaike, H.},
-  title         = {A new look at the statistical model identification},
-  journal       = {IEEE Trans. Automat. Contr.},
-  volume        = {19},
-  number        = {6},
-  pages         = {716--723},
-  year          = {1974},
-  doi           = {10.1109/TAC.1974.1100705}
-}
-
-@article{schwarz1978estimating,
-  author        = {Schwarz, G.},
-  title         = {Estimating the dimension of a model},
-  journal       = {Ann. Statist.},
-  volume        = {6},
-  number        = {2},
-  pages         = {461--464},
-  year          = {1978},
-  doi           = {10.1214/aos/1176344136}
 }
 
 % ======================================================================
@@ -194,20 +146,20 @@
   doi           = {10.1016/0010-4655(75)90039-9}
 }
 
-@software{dembinski2025iminuit,
+% Version used in this work (uv.lock). Zenodo's latest archived record is v2.32.0, so PyPI is cited.
+@software{dembinski2026iminuit,
   author        = {Dembinski, H. and Ongmongkolkul, P. and others},
-  title         = {scikit-hep/iminuit},
+  title         = {{iminuit}},
   version       = {2.33.0},
-  doi           = {10.5281/zenodo.3949207},
-  url           = {https://github.com/scikit-hep/iminuit},
-  note          = {Version used in this work. TO VERIFY: author list and year of the 2.33.0 Zenodo record}
+  year          = {2026},
+  url           = {https://pypi.org/project/iminuit/2.33.0/}
 }
 
-@software{rodrigues2025particle,
+@software{rodrigues2026particle,
   author        = {Rodrigues, E. and Schreiner, H.},
   title         = {scikit-hep/particle},
   version       = {1.1.1},
+  year          = {2026},
   doi           = {10.5281/zenodo.2552429},
-  url           = {https://github.com/scikit-hep/particle},
-  note          = {TO VERIFY: author list and year of the 1.1.1 Zenodo record}
+  url           = {https://github.com/scikit-hep/particle}
 }

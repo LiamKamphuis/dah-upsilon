@@ -13,7 +13,7 @@ import numpy as np
 from scipy import stats
 
 import upsilon as ups
-from upsilon.io import output_subdir
+from upsilon.io import MIN_MUON_PT, output_subdir
 from upsilon.models import BASELINE_SIGNAL, TAIL_PARAMS, share_tails
 
 parser = argparse.ArgumentParser(description=__doc__)
@@ -21,6 +21,8 @@ parser.add_argument("--dataset", default="small")
 args = parser.parse_args()
 
 events = ups.load(args.dataset)
+for name, sample in ((args.dataset, events), ("mc", ups.load("mc"))):
+    print(f"{name}: {len(ups.select_muons(sample))} of {len(sample)} events pass soft muon pT >= {MIN_MUON_PT} GeV")
 # Step 1: each observable against mass
 # pt1 is muon 1 of the pair, not the softer one (pt1 > pt2 in about half of the events);
 # ranges as in the variables plot of 01_measure_masses.py
