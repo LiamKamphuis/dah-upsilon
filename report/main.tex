@@ -119,39 +119,48 @@
 %%        delta m = alpha m, 3e-4); aim; roadmap. ~1 page.
 %% REFS:  ParticleDataGroup:2024cfk; LHCb:2013itw; Skwarnicki:1986xj; LHCb:2023ood.
 
-Particle accelerators and detectors are fundamental in the process of discovery in high-energy physics, where theoretical predictions of the Standard Model are tested against experimental data.
-Accepting or rejecting hypotheses from theory, however, requires substantial precision in the measurement of particle states, leading to the need for reliable calibration targets for particle detectors to reach such precision.
-$\Upsilon$ mesons are bound states of a bottom quark and its antiquark ($b\bar b$), whose three lowest states, \Ups{1S}, \Ups{2S} and \Ups{3S}, appear as narrow peaks in the dimuon
-mass spectrum between 9 and 11 \GeVcc, and their masses are known to better than 0.5 \MeVcc ~\cite{ParticleDataGroup:2024cfk}. 
+Particle accelerators and detectors are fundamental in the process of discovery in high-energy
+physics, where theoretical predictions of the Standard Model are tested against experimental data.
+Accepting or rejecting hypotheses from theory, however, requires precise measurements of particle
+states, and so detectors need reliable calibration targets.
+The ideal target is a particle whose mass is already known far better than the detector can measure
+it, and whose intrinsic width is negligible, so that the peak it leaves in the data reflects the
+detector alone.
+The $\Upsilon$ mesons, bound states of a bottom quark and its antiquark ($b\bar b$), come close to
+this ideal.
+Their three lowest states, \Ups{1S}, \Ups{2S} and \Ups{3S}, decay to muon pairs and appear as
+narrow peaks in the dimuon mass spectrum between 9 and 11 \GeVcc, with masses known to better than
+0.5 \MeVcc~\cite{ParticleDataGroup:2024cfk}.
+Lying below the threshold for decay into a pair of $B$ mesons (about 10.56 \GeVcc), they can decay
+only through a strongly suppressed annihilation of the $b\bar b$ pair, so their natural widths are
+only about 54, 32 and \SI{20}{keV}~\cite{ParticleDataGroup:2024cfk}.
 
-The \Ups{1S}, \Ups{2S} and \Ups{3S} are the $n = 1, 2, 3$ radial states with the quark
-spins aligned and no orbital angular momentum ($n\,{}^3S_1$). This gives them
-$J^{PC} = 1^{--}$, the quantum numbers of the photon, so the $b\bar b$ pair can annihilate
-through a virtual photon into a lepton pair. Decays into a $B\bar B$ pair are forbidden by
-energy conservation below threshold (about \SI{10.56}{GeV/\clight^2}). The remaining strong
-decays must go through three gluons, which is strongly suppressed (the OZI rule). As a
-result the natural widths are only about 54, 32 and \SI{20}{keV}\todo{PDG 2024}, and the
-dimuon branching fractions are 2--2.5\%\todo{PDG 2024}. At the LHC the $\Upsilon$ states
-are produced mainly through gluon--gluon fusion. LHCb, a forward spectrometer covering
-$2 < \eta < 5$, records them in large numbers~\cite{LHCb:2013itw}.
+With widths this small, the observed peaks, tens of MeV wide, are almost entirely the detector's
+resolution, and their shape records how well the muon momenta are measured.
+The dimuon mass is computed from the two measured muon momenta and their opening angle.
+At these momenta the momentum term dominates, so $\delta m/m \approx \delta p/p$: the three peaks
+share the same relative resolution, and their absolute widths grow with mass.
+The momentum is measured from how much each track bends in the magnet, and a faster track bends less,
+so the resolution varies with the muons' momenta and directions.
+Photons radiated by the muons lower the reconstructed mass of some
+candidates, which gives each peak a tail on its low-mass side, conventionally described by a
+Crystal Ball function~\cite{Skwarnicki:1986xj}.
+The peak positions, in turn, test the momentum calibration: because the masses are known, a
+miscalibration $p \to (1+\alpha)p$ appears directly as a shift $\delta m = \alpha m$.
+LHCb calibrates this scale to $3\times10^{-4}$~\cite{LHCb:2023ood},
+about 3 \MeVcc at the $\Upsilon$ masses.
 
-With natural widths of tens of keV, the observed width of each peak, tens of MeV, comes
-almost entirely from the detector. The dimuon mass is computed from the two measured muon
-momenta and their opening angle. At these momenta the momentum term dominates, so
-$\delta m/m \approx \delta p/p$: the three peaks share the same relative resolution, and
-their absolute widths grow with mass. The momentum itself is measured from how much each
-track bends in the magnet. A faster track bends less, so its momentum is measured less
-precisely, and the resolution varies with the muons' momenta and directions.
-Photons radiated by the muons lower the reconstructed mass of some candidates, which gives each
-peak a tail on its low-mass side, conventionally described by a Crystal Ball
-function~\cite{Skwarnicki:1986xj}. Finally, a miscalibration of the momentum scale,
-$p \to (1+\alpha)p$, shifts every mass by $\delta m = \alpha m$. LHCb calibrates this scale to
-$3\times10^{-4}$~\cite{LHCb:2023ood}, about \SI{3}{MeV/\clight^2} at the $\Upsilon$ masses.
-
+This report measures the three $\Upsilon$ masses with extended maximum-likelihood fits to dimuon
+candidates recorded in 2015 by LHCb, a forward spectrometer designed for the study of particles
+containing b or c quarks.~\cite{LHCb:2013itw}.
+Since the true masses are known, the measurement also tests the analysis itself: how the peak
+shape is modelled, how the result depends on the selection and the muon kinematics, and how
+the uncertainties are estimated.
 \Cref{sec:method} describes the data, the fitting method and the mass models.
 \Cref{sec:results} follows the project tasks: Gaussian fits to one and then three peaks,
-extended signal models, kinematic selection and binning, and finally the systematic
-uncertainties and the measured masses. \Cref{sec:conclusion} concludes.
+extended signal models, kinematic selection and binning, and finally the systematic uncertainties
+and the measured masses.
+\Cref{sec:conclusion} concludes.
 
 % ================================================================ 2 METHOD
 \section{Method}
