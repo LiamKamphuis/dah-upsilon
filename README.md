@@ -12,8 +12,6 @@ The LHCb collaboration., Aaij, R., Beteta, C.A. et al. Production of J/ψ and me
 uv sync                 # creates .venv (Python 3.12) with numpy, scipy, iminuit, matplotlib, mplhep
 ```
 
-Data files used in this project are not tracked by git, but come from the LHCb experiment's Run II in 2015. 
-
 ## API
 
 The API is intended to be fairly intuitive and flexible, allowing for simple model building, fitting, and viewing and comparison. 
