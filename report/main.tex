@@ -98,18 +98,24 @@
 %%        the method in one sentence (double Crystal Ball, selection, kinematic bins, systematics),
 %%        the result (three masses with stat / fit-model / momentum-scale uncertainties) and the
 %%        conclusion (momentum scale dominates; fit-model uncertainty below 1 MeV). Written LAST.
-\todo{abstract}
+
+The masses of the \Ups{1S}, \Ups{2S} and \Ups{3S} mesons are measured with extended binned maximum-likelihood fits to dimuon data recorded by LHCb in 2015 at $\sqrt{s} = 13$\,TeV.
+A double Crystal Ball signal model is fitted simultaneously in 12 cells of rapidity and transverse momentum, after a selection on the soft muon \pT{} and a correction for the shape bias measured on simulation.
+The masses are $9455.95 \pm 0.13 \pm 0.19 \pm 2.84$, $10018.44 \pm 0.27 \pm 0.25 \pm 3.01$ and $10349.86 \pm 0.44 \pm 0.71 \pm 3.10\,\MeVcc{}$, where the uncertainties are statistical, fit model and momentum scale.
+All three lie about 1.6 standard deviations below their PDG values, consistent with a single momentum-scale offset of $(-4.75 \pm 0.14)\times10^{-4}$, which dominates the uncertainty.
+
 \end{abstract}
 
 \vfill
-\todo{date}
+\begin{center}
+    28 November 2026
+\end{center}
 \newpage
 
 % ---------------------------------------------------------------- body
 \pagestyle{plain}
 \pagenumbering{arabic}
 \tableofcontents
-\newpage
 
 % ================================================================ 1 INTRODUCTION
 \section{Introduction}
@@ -156,6 +162,7 @@ Since the true masses are known, the measurement also tests the analysis itself,
 
 The data consist of 4\,689\,467 dimuon candidates recorded by LHCb in 2015 in proton--proton collisions at $\sqrt{s} = \SI{13}{TeV}$, with masses between 9.0 and 11.0\,\GeVcc{} (\cref{fig:variables}).
 Each candidate records the dimuon mass $m$, transverse momentum \pT{}, pseudorapidity $\eta$ and momentum $p$, and the transverse momenta $p_{\mathrm{T},1}$ and $p_{\mathrm{T},2}$ of the two muons.
+Rapidity $y$ is then calculated from the candidate particle $m$, $p$, and \pT{}, for usage described later in this section.
 Most candidates are combinatorial background from pairs of unrelated muons or misidentified hadrons~\cite{LHCb:2013itw}.
 
 A sample of 398\,842 simulated \Ups{1S} decays, with no background, accompanies the data.
@@ -643,7 +650,24 @@ At $-4.75\times10^{-4}$ it is larger than the uncertainty LHCb quotes for its ca
 %%        shape dependence); what would be done next (sigma parameterised in pT and y; a curved
 %%        background per cell; a momentum-scale calibration of this sample). Half a page.
 
-\todo{conclusion}
+We measured the masses of the \Ups{1S}, \Ups{2S} and \Ups{3S} mesons with extended binned maximum-likelihood fits to 1.9 million selected dimuon candidates from the LHCb 2015 data.
+Starting from a single Gaussian, we extended the signal model to a double Crystal Ball, which describes both the radiative tail and the spread of detector resolutions, and fitted it simultaneously in 12 cells of rapidity and transverse momentum (\cref{sec:r-gauss,sec:r-shape,sec:r-selection}).
+A cut on the soft muon \pT{} at 3\,\GeVc{} raised the \Ups{1S} purity from 0.59 to 0.78 while keeping the statistical errors near their minimum.
+The masses were corrected for the shape bias measured on simulation, and pseudo-experiments confirmed that the fit returns unbiased masses with correctly estimated errors.
+
+The final masses are
+\begin{align*}
+    m_{1S} &= 9455.95 \pm 0.13 \pm 0.19 \pm 2.84\,\MeVcc, \\
+    m_{2S} &= 10018.44 \pm 0.27 \pm 0.25 \pm 3.01\,\MeVcc, \\
+    m_{3S} &= 10349.86 \pm 0.44 \pm 0.71 \pm 3.10\,\MeVcc,
+\end{align*}
+where the uncertainties are statistical, fit model and momentum scale (\cref{tab:final}).
+The momentum scale is several times larger than the other two combined.
+All three masses lie below their PDG values~\cite{ParticleDataGroup:2024cfk}, by 4.45, 4.96 and 5.24\,\MeVcc{}, about 1.6 times their total uncertainty.
+The offsets grow in proportion to the mass and are described by a single scale factor of $(-4.75 \pm 0.14)\times10^{-4}$.
+Calibrating on the \Ups{1S} brings the other two masses within one standard deviation of their PDG values.
+The discrepancy is therefore a momentum-scale offset in the data rather than a fault of the mass model, and it is larger than the $3\times10^{-4}$ uncertainty of LHCb's final calibration~\cite{LHCb:2023ood}.
+With statistical and fit-model precision already below 1\,\MeVcc{}, a more precise measurement now depends on that calibration.
 
 % ================================================================ AI USE
 \section*{Declaration of AI use}
@@ -651,7 +675,7 @@ At $-4.75\times10^{-4}$ it is larger than the uncertainty LHCb quotes for its ca
 %% SCOPE: what AI assistance was used for and what it was not, in line with the course guidance.
 %%        Keep factual and short.
 
-\todo{AI declaration}
+Claude Opus 5.5 was consulted in writing portions of the source code modules. This includes research into more advanced statistical techniques for model comparison, planning and structuring of the implementation of such methods in the code, and also code review. All functions and scripts were written by hand.
 
 % ================================================================ REFERENCES
 \printbibliography[heading=bibintoc, title={References}]
@@ -780,6 +804,8 @@ At $-4.75\times10^{-4}$ it is larger than the uncertainty LHCb quotes for its ca
 %%        1.1.1, mplhep); every figure and number regenerated with --dataset full.
 %% REFS:  dembinski2026iminuit; rodrigues2026particle.
 
+The analysis code is a Python package, \texttt{upsilon}, that holds the fitting machinery, and seven numbered scripts that configure it, one per study.
+
 \begin{table}[!htbp]
     \centering
     \small
@@ -791,11 +817,30 @@ At $-4.75\times10^{-4}$ it is larger than the uncertainty LHCb quotes for its ca
         \midrule
         01\_measure\_masses.py & Gaussian fits, error scans, residuals (\cref{sec:r-gauss}) \\
         02\_signal\_shape.py   & simulation and data shape fits, model comparison, correlations (\cref{sec:r-shape}) \\
-        03\_selection.py       & sideband purity, cut scan, slice stability (\cref{sec:r-selection}) \\
+        03\_selection.py       & sideband purity, cut scan (\cref{sec:r-selection}) \\
         04\_kinematic\_bins.py & simultaneous fit in $(\pT, y)$ cells (\cref{sec:r-selection}) \\
         05\_momentum\_scale.py & data $-$ simulation peak position (\cref{sec:r-final}) \\
         06\_final\_masses.py   & systematics and final masses (\cref{sec:r-final}) \\
         07\_toys.py            & pseudo-experiment validation (\cref{sec:r-final}) \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{table}[!htbp]
+    \centering
+    \small
+    \caption{Modules of the \texttt{upsilon} package.}
+    \label{tab:modules}
+    \begin{tabularx}{\textwidth}{>{\ttfamily}l X}
+        \toprule
+        \normalfont Module & Contents \\
+        \midrule
+        io.py       & data reader, soft muon selection, rapidity, output paths \\
+        models.py   & signal and background shapes normalised on the fit window, parameter sharing across peaks and cells \\
+        fitting.py  & extended binned and unbinned fits and simultaneous cell fits, with convergence checks and restarts \\
+        compare.py  & goodness of fit, likelihood ratios, AIC and BIC, likelihood scans \\
+        masses.py   & simulation shape bias, mass differences, momentum-scale calibration \\
+        plotting.py & fit overlays, pulls and likelihood scans in the LHCb style \\
         \bottomrule
     \end{tabularx}
 \end{table}
