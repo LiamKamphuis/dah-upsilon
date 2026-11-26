@@ -46,10 +46,10 @@ DATASETS = {
 
 def load_events(path: str | Path) -> np.ndarray:
     """Read a binary event file into a structured array with fields ``COLUMNS``."""
-    raw = np.fromfile(path, dtype="<f4")
-    if raw.size % len(COLUMNS):
-        raise ValueError(f"{path}: {raw.size} floats is not a multiple of {len(COLUMNS)}")
-    return raw.view(DTYPE)
+    data = np.fromfile(path, dtype="<f4")
+    if data.size % len(COLUMNS):
+        raise ValueError(f"{path}: {data.size} floats is not a multiple of {len(COLUMNS)}")
+    return data.view(DTYPE)
 
 
 def save_json(obj, name: str, dataset: str) -> Path:
@@ -66,9 +66,8 @@ def load(dataset: str | Path = "small") -> np.ndarray:
     return load_events(path)
 
 
-#: Selection: the softer muon's transverse momentum, min(pt1, pt2) >= MIN_MUON_PT [GeV/c].
-#: Chosen in scripts/03_selection.py: at 3.0 GeV every peak's statistical mass error is
-#: within 2% of its own minimum, and the purity rises to 0.78 / 0.51 / 0.37 (1S / 2S / 3S).
+# Selection: the softer muon's transverse momentum, min(pt1, pt2) >= MIN_MUON_PT [GeV/c].
+# Choice from scripts/03_selection.py
 MIN_MUON_PT = 3.0
 
 

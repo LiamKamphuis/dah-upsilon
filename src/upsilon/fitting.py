@@ -46,7 +46,7 @@ class FitResult:
         return self.minuit.valid
 
     @property
-    def nll(self) -> float:
+    def nll(self) -> float | int | None:
         return self.minuit.fval
 
     def summary(self) -> str:

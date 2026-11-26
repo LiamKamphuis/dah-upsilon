@@ -6,14 +6,16 @@ dimuon data (brief: `docs/project_F1_description.md`, paper: `docs/JHEP06(2013)0
 ## Setup
 
 ```bash
-uv sync                 # creates .venv (Python 3.12) with numpy, scipy, iminuit, matplotlib, mplhep, pytest
-uv run pytest           # model normalisation + fit-recovery tests
+uv sync                 # creates .venv (Python 3.12) with numpy, scipy, iminuit, matplotlib, mplhep
 ```
 
-In PyCharm: *Settings → Project → Python Interpreter → Add → Existing → `.venv/bin/python`*.
-Put the data files in `data/` (`ups-15.bin`, `ups-15-small.bin`, `mc.bin`; gitignored).
+Data files used in this project are not tracked by git, but come from the LHCb experiment's Run II in 2015. 
 
 ## API
+
+The API is intended to be fairly intuitive and flexible, allowing for simple model building, fitting, and viewing and comparison. 
+
+Here is an example usage:
 
 ```python
 import upsilon as ups
@@ -36,8 +38,8 @@ ups.fit(model, mass, fix={"alpha_1S": 1.7, "n_1S": 2.5})   # e.g. tails fixed fr
 ## Layout
 
 The package holds the reusable fitting machinery; each script is one section of the report and
-writes its figures to `output/figures/<dataset>/` and its numbers to `output/results/<dataset>/`
-(both gitignored). Every number in the report comes from one of these scripts.
+writes its figures to `output/figures/<dataset>/` and its numerical results to `output/results/<dataset>/`
+(both gitignored).
 
 | Path | Contents |
 |---|---|
@@ -59,23 +61,3 @@ writes its figures to `output/figures/<dataset>/` and its numbers to `output/res
 | `scripts/07_toys.py` | fit validation: pulls from pseudo-experiments |
 
 Scripts are numbered in the order of the brief's tasks. They take `--dataset small|full|mc` (default `small` for quick runs; use `full` for the report).
-
-## Design notes for the discussion
-
-* **Normalisation on the window.** Each shape is normalised on `[lo, hi]` analytically via its CDF,
-  so the composite stays normalised for any parameters and fit range. The fit range then becomes
-  a clean systematic variation.
-* **Fit window.** The data files cover 9.0–11.0 GeV/c² (not 8.5 as the brief states). A window that
-  extends past the data makes the normalised background predict events where there are none and
-  drives the fit to an unphysical minimum, so the default window is (9.0, 11.0).
-* **Model choice = configuration.** Signal/background shapes are chosen by name and parameters
-  can be shared across peaks (`share=`). Comparing "independent widths" vs "common tail parameters"
-  vs "tails fixed from MC" therefore uses the same code path, which keeps the comparisons fair.
-* **Systematics as variations.** Each analysis choice kept as a systematic (signal model, soft-muon
-  cut, kinematic cells) is a refit with one change, and the parameter shift is the systematic.
-  A cut shares most events with the baseline, and removes mostly background, so neither fit's
-  error (nor Barlow's formula, which assumes a random subset) gives the error on the shift; the
-  mass is instead checked for stability in independent slices (`03_selection.py`). Pseudo-experiments
-  (`07_toys.py`) separate a fit bias from noise.
-* **Residuals/pulls** are the first diagnostic of model inadequacy: a structured pattern
-  around the peaks (e.g. low-mass excess from FSR) motivates the Crystal Ball.
