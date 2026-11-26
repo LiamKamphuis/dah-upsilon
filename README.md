@@ -1,7 +1,10 @@
 # Upsilon mass fits: DAH Project F1
 
 Extended maximum-likelihood fits of the Υ(1S), Υ(2S), Υ(3S) peaks in LHCb 2015
-dimuon data (brief: `docs/project_F1_description.md`, paper: `docs/JHEP06(2013)064.pdf`).
+dimuon data (brief: `docs/project_F1_description.md`). Analysis techniques inspired by:
+
+The LHCb collaboration., Aaij, R., Beteta, C.A. et al. Production of J/ψ and mesons in pp collisions at $\sqrt{s} = 8$
+ TeV. J. High Energ. Phys. 2013, 64 (2013). https://doi.org/10.1007/JHEP06(2013)064
 
 ## Setup
 

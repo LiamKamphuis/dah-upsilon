@@ -32,3 +32,7 @@ report/*.toc
 report/*.pdf
 report/*.fdb_latexmk
 report/*.fls
+/report/
+
+# Docs
+/docs/JHEP06(2013)064.pdf
